@@ -1,5 +1,9 @@
 # Shift Management Tool
 
+## Server
+- [Live demo](https://calm-pear-crab-fez.cyclic.app/)
+- [Repository](https://github.com/LinhNguyenLe2109/ShiftManagementServer) 
+
 ## Project Description
 
 The Shift Management Tool is a web application designed with the purpose of streamlining managing shifts for employees. It provides an interface for managers to assign shifts to employees, while also allowing for shift reassignment if an employee is unable to go through their shift, managers will have access to performance analytics for each employee. The app also incorporates email notifications to keep everyone informed about shift assignments and changes.
