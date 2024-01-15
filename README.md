@@ -42,14 +42,7 @@ The Shift Management Tool is a web application designed with the purpose of stre
 
 ## Color Theme
 
-- Option 1:
-- <img src="https://github.com/leoschwartz/ShiftManagementTool/assets/74940884/8705fd40-f689-4454-a238-bfdc78ccc304" alt="Option 1" width="400" height="300">
-- Option 2:
-- <img src="https://github.com/leoschwartz/ShiftManagementTool/assets/74940884/a26b431e-0b5d-4cbc-b2fe-95610d7aef58" alt="Option 2" width="400" height="300">
-- Option 3:
 - <img src="https://github.com/leoschwartz/ShiftManagementTool/assets/74940884/458f0248-c5b2-4399-a5d1-d8db1f06a191" alt="Option 3" width="400" height="300">
-- Option 4:
-- <img src="https://github.com/leoschwartz/ShiftManagementTool/assets/74940884/0e099dfc-9088-494d-b70a-40edb63f33dc" alt="Option 4" width="400" height="300">
 
 ## Acceptance Criteria
   - Shifts can be assigned to employees.
