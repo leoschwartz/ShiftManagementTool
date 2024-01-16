@@ -17,7 +17,7 @@ export default {
         primary: "var(--primary)",
         secondary: "var(--secondary)",
         third: "var(--third)",
-        fourth: "var(--fourth)",
+        forth: "var(--forth)",
         fifth: "var(--fifth)",
       },
     },
