@@ -1,11 +1,25 @@
-import './App.css'
-
+import "./App.css";
+import Homepage from "./routes/Homepage";
+import Navbar from "./components/Navbar";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 function App() {
   return (
     <>
-      <h1 className='text-xl font-bold'>Tailwind test</h1>
+      <Router>
+        <Routes>
+          <Route
+            path="*"
+            element={
+              <>
+                <Navbar />
+                <Homepage />
+              </>
+            }
+          ></Route>
+        </Routes>
+      </Router>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
