@@ -14,8 +14,8 @@ function App() {
             path="/login"
             element={
               <>
-                <Navbar />
-                <Login />
+                <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> 
+                <Login setIsLoggedIn={setIsLoggedIn} />
               </>
             }
           ></Route>
@@ -23,12 +23,21 @@ function App() {
             path="*"
             element={
               <>
-                <Navbar />
-                {isLoggedIn ? (
+                <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+                 {isLoggedIn ? (
                   <Homepage />
                 ) : (
                   <Login setIsLoggedIn={setIsLoggedIn} />
                 )}
+              </>
+            }
+          ></Route>
+          <Route
+            path="/homepage"
+            element={
+              <>
+                <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> 
+                <Homepage />
               </>
             }
           ></Route>
