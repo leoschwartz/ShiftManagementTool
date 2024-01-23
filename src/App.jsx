@@ -1,5 +1,5 @@
 import "./App.css";
-import Homepage from "./routes/Homepage";
+import Home from "./routes/Home";
 import Navbar from "./components/Navbar";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./routes/Login";
@@ -20,12 +20,21 @@ function App() {
             }
           ></Route>
           <Route
+            path="/homepage"
+            element={
+              <>
+                <Navbar />
+                <Home />
+              </>
+            }
+          ></Route>
+          <Route
             path="*"
             element={
               <>
                 <Navbar />
                 {isLoggedIn ? (
-                  <Homepage />
+                  <Home />
                 ) : (
                   <Login setIsLoggedIn={setIsLoggedIn} />
                 )}
