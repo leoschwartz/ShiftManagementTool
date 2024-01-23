@@ -3,6 +3,7 @@ import Homepage from "./routes/Homepage";
 import Navbar from "./components/Navbar";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./routes/Login";
+import Profile from "./routes/Profile";
 import { useState } from "react";
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -38,6 +39,15 @@ function App() {
               <>
                 <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> 
                 <Homepage />
+              </>
+            }
+          ></Route>
+          <Route
+            path="/profile"
+            element={
+              <>
+                <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> 
+                <Profile />
               </>
             }
           ></Route>
