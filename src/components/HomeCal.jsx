@@ -3,6 +3,7 @@ import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 
 export default class HomeCal extends React.Component {
+  //at some point this should be generalized a bit more so it can be used other places
   render() {
     const options = {
       plugins: [ timeGridPlugin ],
