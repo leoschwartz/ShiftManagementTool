@@ -1,17 +1,11 @@
 import React from "react";
-import HomeCal from "../components/HomeCal";
+import Schedule from "../components/Schedule";
 
 export default class Home extends React.Component {
   render() { return (
-    <section className="relative" id="home">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="w-1/2 min-w-36">
-          test
-        </div>
-        <div className="w-1/2 min-w-80">
-          <HomeCal/>
-        </div>
-      </div>
+    <section className="flex justify-center items-center" id="home">
+    <div className="absolute inset-0 bg-gradient-to-tr from-third to-fifth -z-10 opacity-50"></div>
+      <Schedule/>
     </section>
   )}
 }
