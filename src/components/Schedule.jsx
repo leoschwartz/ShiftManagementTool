@@ -41,14 +41,27 @@ export default class Schedule extends React.Component {
       //validRange : //depending on how generator works we might want this
       nowIndicator : true,
       height: 512,
+      eventColor: "var(--forth)",
+      events: [
+        {
+          title: 'Inverse Cashier 1B 0-16',
+          start: '2024-01-24T09:30:00',
+          end: '2024-01-24T12:30:00'
+        }
+      ],
+      eventClick: function( eventClickInfo ) {
+        //todo
+        console.log(eventClickInfo);
+       }
     };
     //fullcalendar styling is either this or a bootstrap style
+    // td { font-size: 3pt; } controls the entire chart scale!!!
     const TableStyleWrapper = styled.div`
     td, th, table {
       border-color: #222 !important;
     }
     td {
-      font-size: 5pt;
+      font-size: 3pt;
     }
     button {
       background-color: var(--forth) !important;
@@ -63,6 +76,9 @@ export default class Schedule extends React.Component {
       margin-left: 6px;
       margin-right:6px;
       font-size:16pt;
+    }
+    .fc-event {
+      font-size: 12pt;
     }
   `
     /*References for later:
