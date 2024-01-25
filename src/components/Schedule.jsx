@@ -2,9 +2,22 @@ import React from "react";
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import styled from "@emotion/styled";
+import {tempEventStorage, tempGetEvent, formatTime} from "../utils"
 
 export default class Schedule extends React.Component {
   //while I'd love to split this into two components, they really need access to each other for the editing functionality
+
+  viewEvent(eventClickInfo) {
+    const e = tempGetEvent(eventClickInfo.event.extendedProps.eventId)
+    const dateFormat = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric'};
+    document.getElementById("shiftData-name").textContent = e.name;
+    document.getElementById("shiftData-date").textContent = e.startTime.toLocaleDateString("en-US", dateFormat);
+    document.getElementById("shiftData-time").textContent = formatTime(e.startTime) + ' - ' + formatTime(e.endTime);
+    document.getElementById("shiftData-assigner").textContent = e.assigner;
+    document.getElementById("shiftData-desc").textContent = e.description;
+    document.getElementById("shiftData-completed").checked = e.completed;
+  }
+
   render() {
     const options = {
       plugins: [ timeGridPlugin ],
@@ -42,17 +55,21 @@ export default class Schedule extends React.Component {
       nowIndicator : true,
       height: 512,
       eventColor: "var(--forth)",
-      events: [
-        {
-          title: 'Inverse Cashier 1B 0-16',
-          start: '2024-01-24T09:30:00',
-          end: '2024-01-24T12:30:00'
-        }
-      ],
-      eventClick: function( eventClickInfo ) {
-        //todo
-        console.log(eventClickInfo);
-       }
+      events: function( fetchInfo, successCallback/*, failureCallback*/ ) { 
+        //eventually this will do a db query
+        //https://fullcalendar.io/docs/events-function
+        const events = tempEventStorage.map((x) => { 
+          return {
+          title: x.name,
+          start: x.startTime.toISOString(),
+          end : x.endTime.toISOString(),
+          extendedProps: {
+            eventId: x.id
+          },
+        };});
+        successCallback(events);
+      },
+      eventClick: this.viewEvent,
     };
     //fullcalendar styling is either this or a bootstrap style
     // td { font-size: 3pt; } controls the entire chart scale!!!
@@ -79,30 +96,21 @@ export default class Schedule extends React.Component {
     }
     .fc-event {
       font-size: 12pt;
-    }
-  `
-    /*References for later:
-    #shiftData-name
-    #shiftData-date
-    #shiftData-time
-    #shiftData-assigner
-    #shiftData-desc
-    #shiftData-completed
-    #shiftCompletedButton*/
+    }`
     return (
-      <section className="relative" id="home">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="w-full max-w-md h-full">
+      <section className="relative w-full" id="schedule">
+        <div className="grid grid-cols-2 gap-4 w-full">
+          <div className="w-full max-w-md h-full grow">
             <div className="m-3 h-full border-2 border-solid rounded border-black text-neutral-400 bg-secondary bg-gradient-to-tr from-secondary to-neutral-600">
               <h3 className="mt-1 font-bold mb-2 text-lg text-neutral-900">Shift View:</h3>
               <hr className="mb-2 border-black"/>
-              <h2 id="shiftData-name" className="text-2xl ml-5 mr-5 rounded p-0.5 bg-forth text-white font-bold">Inverse Cashier 1B 0-16</h2>
-              <div id="shiftData-date" className="mt-2 text-neutral-200">Jan 32, 2024 (Cheusday) </div>
-              <div id="shiftData-time" className="mt-2 text-neutral-200">0:00am - 16:00pm</div>
-              <div className="mt-2">Manager/Supervisor: <span id="shiftData-assigner" className="text-neutral-200">A̷̶̸̴̴̶̶g̴̴̶̸̶̷̸b̷̴̸̷̴̶̵æ̷̵̷̶̵̷̷l̷̶̸̷̷̴̸ ̶̴̵̸̷̴̷B̶̴̵̴̴̴̴ð̵̸̸̴̴̷̵i̶̸̸̷̸̶̴a̸̶̷̶̴̴̶</span></div>
+              <h2 id="shiftData-name" className="text-2xl ml-5 mr-5 rounded p-0.5 bg-forth text-white font-bold"></h2>
+              <div id="shiftData-date" className="mt-2 text-neutral-200"></div>
+              <div id="shiftData-time" className="mt-2 text-neutral-200"></div>
+              <div className="mt-2">Manager/Supervisor: <span id="shiftData-assigner" className="text-neutral-200"></span></div>
               <div className="mt-2">Description:</div>
               <div className="min-h-1/2 h-min ml-5 mr-5 mt-1 h-full border-2 border-solid rounded border-neutral-800 bg-neutral-700">
-                  <div id="shiftData-desc" className="text-neutral-200">Your route should be provided to you. Receive change from each cashier as according to your amounts record.</div>
+                  <div id="shiftData-desc" className="text-neutral-200"></div>
               </div>
               <div className="m-2">Completed:
                 <input id="shiftData-completed" type="checkbox" className="ml-2 mr-3" disabled></input>
