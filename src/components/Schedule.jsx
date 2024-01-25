@@ -99,7 +99,7 @@ export default class Schedule extends React.Component {
     }`
     return (
       <section className="relative w-full" id="schedule">
-        <div className="grid grid-cols-2 gap-4 w-full">
+        <div className="grid grid-cols-2 gap-1 w-full">
           <div className="w-full max-w-md h-full grow">
             <div className="m-3 h-full border-2 border-solid rounded border-black text-neutral-400 bg-secondary bg-gradient-to-tr from-secondary to-neutral-600">
               <h3 className="mt-1 font-bold mb-2 text-lg text-neutral-900">Shift View:</h3>
