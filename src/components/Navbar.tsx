@@ -14,7 +14,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   };
 
   return (
-    <nav className="bg-gradient-to-tr from-third to-fifth dark:bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-primary dark:border-gray-600">
+    <nav className="bg-gradient-to-tr from-third to-fifth dark:bg-gray-900 w-full z-20 top-0 start-0 border-b border-primary dark:border-gray-600">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <Link to="/homepage" className="flex items-center space-x-3 rtl:space-x-reverse">
           <span className="text-white self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Shift Management Tool</span>
