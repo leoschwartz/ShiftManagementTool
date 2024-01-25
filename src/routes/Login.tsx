@@ -1,6 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router";
 
 function Login(props) {
+  const navigate = useNavigate()
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     console.log(
@@ -8,6 +10,7 @@ function Login(props) {
       (event.target as HTMLFormElement).password.value
     );
     props.setIsLoggedIn(true);
+    navigate("/schedule")
   };
   return (
     <section className="flex justify-center items-center mt-52">

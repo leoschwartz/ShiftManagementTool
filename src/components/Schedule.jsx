@@ -27,6 +27,10 @@ export default class Schedule extends React.Component {
         center: 'title',
         right: 'timeGridWeek,timeGridDay'
       },
+      //https://github.com/fullcalendar/fullcalendar/issues/4638 - something for later...
+      /*footerToolbar: {
+        right: 'prev,next'
+      },*/
       allDaySlot: false,
       slotDuration:"00:05:00",
       slotLabelInterval:"01:00",
