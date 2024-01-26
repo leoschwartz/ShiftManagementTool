@@ -1,4 +1,5 @@
 import "./App.css";
+import SchedulePage from "./routes/SchedulePage";
 import Homepage from "./routes/Homepage";
 import Navbar from "./components/Navbar";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -48,6 +49,15 @@ function App() {
               <>
                 <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> 
                 <Profile />
+              </>
+            }
+          ></Route>
+          <Route
+            path="/schedule"
+            element={
+              <>
+                <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> 
+                <SchedulePage />
               </>
             }
           ></Route>
