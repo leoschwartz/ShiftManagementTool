@@ -1,16 +1,15 @@
 import React from "react";
 import { useNavigate } from "react-router";
+import { authenticateUser } from "../api/authenticateUser";
 
-function Login(props) {
-  const navigate = useNavigate()
+function Login() {
+  const navigate = useNavigate();
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log(
-      (event.target as HTMLFormElement).email.value,
-      (event.target as HTMLFormElement).password.value
-    );
-    props.setIsLoggedIn(true);
-    navigate("/schedule")
+    const email = (event.target as HTMLFormElement).email.value;
+    const password = (event.target as HTMLFormElement).password.value;
+    // navigate("/homepage")
+    authenticateUser(email, password);
   };
   return (
     <section className="flex justify-center items-center mt-52">

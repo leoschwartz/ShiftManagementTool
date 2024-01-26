@@ -5,9 +5,10 @@ import Navbar from "./components/Navbar";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./routes/Login";
 import Profile from "./routes/Profile";
-import { useState } from "react";
+import { useAtom } from "jotai";
+import { isLoggedInAtom } from "./globalAtom";
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn] = useAtom(isLoggedInAtom);
   return (
     <>
       <Router>
@@ -16,8 +17,8 @@ function App() {
             path="/login"
             element={
               <>
-                <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> 
-                <Login setIsLoggedIn={setIsLoggedIn} />
+                <Navbar />
+                <Login />
               </>
             }
           ></Route>
@@ -25,12 +26,8 @@ function App() {
             path="*"
             element={
               <>
-                <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
-                 {isLoggedIn ? (
-                  <Homepage />
-                ) : (
-                  <Login setIsLoggedIn={setIsLoggedIn} />
-                )}
+                <Navbar />
+                {isLoggedIn ? <Homepage /> : <Login />}
               </>
             }
           ></Route>
@@ -38,7 +35,7 @@ function App() {
             path="/homepage"
             element={
               <>
-                <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> 
+                <Navbar />
                 <Homepage />
               </>
             }
@@ -47,7 +44,7 @@ function App() {
             path="/profile"
             element={
               <>
-                <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> 
+                <Navbar />
                 <Profile />
               </>
             }
@@ -56,7 +53,7 @@ function App() {
             path="/schedule"
             element={
               <>
-                <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> 
+                <Navbar />
                 <SchedulePage />
               </>
             }
