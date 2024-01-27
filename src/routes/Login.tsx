@@ -2,19 +2,24 @@ import React from "react";
 import { useNavigate } from "react-router";
 import { authenticateUser } from "../api/authenticateUser";
 import { useAtom } from "jotai";
-import { userTokenAtom } from "../globalAtom";
+import { userTokenAtom, userAccessLevelAtom } from "../globalAtom";
 
 function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [, setUserToken] = useAtom(userTokenAtom);
+  const [, setUserAccessLevel] = useAtom(userAccessLevelAtom);
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const token = await authenticateUser(email, password);
-    if (token) {
+    const data = await authenticateUser(email, password);
+    if (data) {
+      const token = data.token;
+      const accessLevel = data.accessLevel;
+      console.log(data)
       setUserToken(token);
-      navigate("/abasd");
+      setUserAccessLevel(accessLevel);
+      navigate("/schedule");
     } else {
       alert("Wrong username or password");
     }

@@ -6,13 +6,7 @@ function Error404() {
   return (
     <section className="relative" id="home">
       {/* Background design */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 grid grid-cols-2 -space-x-52"
-      >
-        <div className="blur-[106px] h-1/3 bg-gradient-to-br from-primary to-secondary opacity-50 "></div>
-        <div className="blur-[106px] h-3/4 bg-gradient-to-r from-forth to-fifth opacity-30"></div>
-      </div>
+
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 md:px-12 xl:px-6">
         <div className="relative pt-36 ml-auto">

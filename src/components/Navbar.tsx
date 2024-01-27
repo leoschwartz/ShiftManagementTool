@@ -20,7 +20,7 @@ function Navbar() {
     <nav className="bg-gradient-to-tr from-third to-fifth w-full z-20 top-0 start-0 border-b border-primary ">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <Link
-          to="/homepage"
+          to="/schedule"
           className="flex items-center space-x-3 rtl:space-x-reverse"
         >
           <span className="text-white self-center text-2xl font-semibold whitespace-nowrap ">
@@ -29,15 +29,16 @@ function Navbar() {
         </Link>
         {isLoggedIn && (
           <div className="hidden md:flex md:order-2 space-x-4 md:space-x-8 rtl:space-x-reverse items-center">
-            <Link to="/homepage" className="text-white hover:text-secondary">
-              Home
+            <Link to="/schedule" className="text-white hover:text-secondary">
+              Schedule
+            </Link>
+            <Link to="/addNewUser" className="text-white hover:text-secondary">
+              Add New User
             </Link>
             <Link to="/profile" className="text-white hover:text-secondary">
               Profile
             </Link>
-            <Link to="/schedule" className="text-white hover:text-secondary">
-              Schedule
-            </Link>
+
             <button
               onClick={handleLogout}
               className="text-white bg-secondary hover:bg-primary focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
@@ -88,11 +89,11 @@ function Navbar() {
               {isLoggedIn && (
                 <>
                   <Link
-                    to="/homepage"
+                    to="/schedule"
                     onClick={() => setIsMenuOpen(false)}
                     className="text-white hover:text-secondary py-2 px-3"
                   >
-                    Home
+                    Schedule
                   </Link>
                   <Link
                     to="/profile"
@@ -101,13 +102,7 @@ function Navbar() {
                   >
                     Profile
                   </Link>
-                  <Link
-                    to="/schedule"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="text-white hover:text-secondary py-2 px-3"
-                  >
-                    Schedule
-                  </Link>
+
                   <button
                     onClick={handleLogout}
                     className="text-white bg-secondary hover:bg-primary focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 mt-4 text-center "

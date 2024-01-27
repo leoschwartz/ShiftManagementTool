@@ -1,10 +1,6 @@
 import axios from "axios";
-
-// @param {string} email
-// @param {string} password
-// @returns {string, number} {token, accessLevel}
-export const authenticateUser = async (email, password) => {
-  const apiUrl = import.meta.env.VITE_API_URL + "/user/login";
+export const addNewUser = async (email, password, ...userInfo) => {
+  const apiUrl = import.meta.env.VITE_API_URL + "/user/register";
   if (!apiUrl) {
     throw new Error("API_URL is not defined");
   }
@@ -12,8 +8,9 @@ export const authenticateUser = async (email, password) => {
     const res = await axios.post(apiUrl, {
       email,
       password,
+      ...userInfo,
     });
-    return res.data;
+    return res.data.token;
   } catch (error) {
     console.log(error);
     return null;

@@ -7,6 +7,8 @@ import Profile from "./routes/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Error404 from "./routes/Error404";
 import Unauthorize from "./routes/Unauthorize";
+import AuthorizationCheck from "./components/AuthorizationCheck";
+import AddNewUserPage from "./routes/AddNewUserPage";
 function App() {
   return (
     <>
@@ -14,11 +16,19 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/login" element={<Login />}></Route>
-          <Route path="/profile" element={<Profile />}></Route>
-
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<SchedulePage />} />
             <Route path="/schedule" element={<SchedulePage />} />
+            <Route
+              element={
+                <AuthorizationCheck
+                  accessLevel={import.meta.env.VITE_ADMIN_ACCESS}
+                />
+              }
+            >
+              <Route path="/addNewUser" element={<AddNewUserPage />}></Route>
+            </Route>
+            <Route path="/profile" element={<Profile />}></Route>
             <Route path="/unauthorize" element={<Unauthorize />} />
           </Route>
           <Route path="*" element={<Error404 />}></Route>
