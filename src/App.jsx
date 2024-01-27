@@ -16,6 +16,7 @@ function App() {
           <Route path="/profile" element={<Profile />}></Route>
 
           <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<SchedulePage />} />
             <Route path="/schedule" element={<SchedulePage />} />
           </Route>
           <Route path="*" element={<Error404 />}></Route>

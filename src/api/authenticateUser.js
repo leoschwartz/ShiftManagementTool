@@ -5,9 +5,14 @@ export const authenticateUser = async (email, password) => {
   if (!apiUrl) {
     throw new Error("API_URL is not defined");
   }
-  const data = await axios.post(apiUrl, {
-    email,
-    password,
-  });
-  return data.token;
+  try {
+    const res = await axios.post(apiUrl, {
+      email,
+      password,
+    });
+    return res.data.token;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
 };

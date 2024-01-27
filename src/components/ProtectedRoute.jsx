@@ -6,8 +6,8 @@ import { Outlet } from "react-router-dom";
 const ProtectedRoute = () => {
   // eslint-disable-next-line no-undef
   const [isLoggedIn] = useAtom(isLoggedInAtom);
-  if (isLoggedIn) {
-    return <Navigate to="/landing" replace />;
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
   }
 
   return <Outlet />;
