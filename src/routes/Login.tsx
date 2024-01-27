@@ -8,8 +8,8 @@ function Login() {
     event.preventDefault();
     const email = (event.target as HTMLFormElement).email.value;
     const password = (event.target as HTMLFormElement).password.value;
-    // navigate("/homepage")
     authenticateUser(email, password);
+    navigate("/homepage")
   };
   return (
     <section className="flex justify-center items-center mt-52">
