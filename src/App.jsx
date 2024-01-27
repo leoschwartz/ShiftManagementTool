@@ -6,6 +6,7 @@ import Login from "./routes/Login";
 import Profile from "./routes/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Error404 from "./routes/Error404";
+import Unauthorize from "./routes/Unauthorize";
 function App() {
   return (
     <>
@@ -18,6 +19,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<SchedulePage />} />
             <Route path="/schedule" element={<SchedulePage />} />
+            <Route path="/unauthorize" element={<Unauthorize />} />
           </Route>
           <Route path="*" element={<Error404 />}></Route>
         </Routes>
