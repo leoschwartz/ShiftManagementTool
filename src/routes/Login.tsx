@@ -1,22 +1,36 @@
 import React from "react";
 import { useNavigate } from "react-router";
+import { authenticateUser } from "../api/authenticateUser";
+import { useAtom } from "jotai";
+import { userTokenAtom, userAccessLevelAtom } from "../globalAtom";
 
-function Login(props) {
-  const navigate = useNavigate()
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+function Login() {
+  const navigate = useNavigate();
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [, setUserToken] = useAtom(userTokenAtom);
+  const [, setUserAccessLevel] = useAtom(userAccessLevelAtom);
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log(
-      (event.target as HTMLFormElement).email.value,
-      (event.target as HTMLFormElement).password.value
-    );
-    props.setIsLoggedIn(true);
-    navigate("/schedule")
+    const data = await authenticateUser(email, password);
+    if (data) {
+      const token = data.token;
+      const accessLevel = data.accessLevel;
+      console.log(data)
+      setUserToken(token);
+      setUserAccessLevel(accessLevel);
+      navigate("/schedule");
+    } else {
+      alert("Wrong username or password");
+    }
+    setEmail("");
+    setPassword("");
   };
   return (
     <section className="flex justify-center items-center mt-52">
       <div className="absolute inset-0 bg-gradient-to-tr from-third to-fifth -z-10 opacity-50"></div>
-      <div className="p-8 rounded shadow text-primary bg-secondary">
-        <h1 className="text-3xl font-bold mb-4">Login</h1>
+      <div className="p-8 rounded shadow text-white bg-secondary text-center">
+        <h1 className="text-3xl font-bold mb-4 text-center">Login</h1>
         <form onSubmit={(ev) => onSubmit(ev)}>
           <div id="inputs" className="mb-4">
             <div>
@@ -27,7 +41,9 @@ function Login(props) {
                 type="email"
                 name="email"
                 id="email"
-                className="border border-gray-300 rounded px-2 py-1"
+                className="border border-gray-300 rounded px-2 py-1 text-primary"
+                value={email}
+                onChange={(ev) => setEmail(ev.target.value)}
               />
             </div>
             <div>
@@ -38,11 +54,13 @@ function Login(props) {
                 type="password"
                 name="password"
                 id="password"
-                className="border border-gray-300 rounded px-2 py-1"
+                className="border border-gray-300 rounded px-2 py-1 text-primary"
+                value={password}
+                onChange={(ev) => setPassword(ev.target.value)}
               />
             </div>
           </div>
-          <button className="bg-forth hover:bg-fifth text-white px-4 py-2 rounded">
+          <button className="bg-forth hover:bg-fifth text-white px-4 py-2 rounded mx-auto">
             Submit
           </button>
         </form>

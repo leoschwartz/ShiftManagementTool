@@ -1,70 +1,40 @@
 import "./App.css";
 import SchedulePage from "./routes/SchedulePage";
-import Homepage from "./routes/Homepage";
 import Navbar from "./components/Navbar";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./routes/Login";
 import Profile from "./routes/Profile";
-import { useState } from "react";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Error404 from "./routes/Error404";
+import Unauthorize from "./routes/Unauthorize";
+import AuthorizationCheck from "./components/AuthorizationCheck";
+import AddNewUserPage from "./routes/AddNewUserPage";
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   return (
     <>
       <Router>
+        <Navbar />
         <Routes>
-          <Route
-            path="/login"
-            element={
-              <>
-                <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> 
-                <Login setIsLoggedIn={setIsLoggedIn} />
-              </>
-            }
-          ></Route>
-          <Route
-            path="*"
-            element={
-              <>
-                <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
-                 {isLoggedIn ? (
-                  <Homepage />
-                ) : (
-                  <Login setIsLoggedIn={setIsLoggedIn} />
-                )}
-              </>
-            }
-          ></Route>
-          <Route
-            path="/homepage"
-            element={
-              <>
-                <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> 
-                <Homepage />
-              </>
-            }
-          ></Route>
-          <Route
-            path="/profile"
-            element={
-              <>
-                <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> 
-                <Profile />
-              </>
-            }
-          ></Route>
-          <Route
-            path="/schedule"
-            element={
-              <>
-                <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> 
-                <SchedulePage />
-              </>
-            }
-          ></Route>
+          <Route path="/login" element={<Login />}></Route>
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<SchedulePage />} />
+            <Route path="/schedule" element={<SchedulePage />} />
+            <Route
+              element={
+                <AuthorizationCheck
+                  accessLevel={import.meta.env.VITE_ADMIN_ACCESS}
+                />
+              }
+            >
+              <Route path="/addNewUser" element={<AddNewUserPage />}></Route>
+            </Route>
+            <Route path="/profile" element={<Profile />}></Route>
+            <Route path="/unauthorize" element={<Unauthorize />} />
+          </Route>
+          <Route path="*" element={<Error404 />}></Route>
         </Routes>
       </Router>
     </>
   );
 }
-
 export default App;
