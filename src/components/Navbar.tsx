@@ -7,7 +7,7 @@ function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn] = useAtom(isLoggedInAtom);
   const [accessLevel] = useAtom(userAccessLevelAtom);
-
+  
   const handleLogout = () => {
     // setIsLoggedIn(false);
     setIsMenuOpen(false);
@@ -33,7 +33,7 @@ function Navbar() {
             <Link to="/schedule" className="text-white hover:text-secondary">
               Schedule
             </Link>
-            {accessLevel === 1 ? (
+            {accessLevel == 1 ? (
             <Link to="/employeeList" className="text-white hover:text-secondary">
               Employee List
             </Link>) : null}
@@ -100,7 +100,7 @@ function Navbar() {
                   >
                     Schedule
                   </Link>
-                  {accessLevel === 1 ? (
+                  {accessLevel == 1 ? (
                   <Link to="/employeeList" className="text-white hover:text-secondary">
                     Employee List
                   </Link>) : null}

@@ -128,8 +128,31 @@ const Profile = () => {
     closeReportsToEditor();
   };
 
-  const saveChanges = () => {
-    console.log("Changes saved!");
+  const saveChanges = async () => {
+    try {
+      const response = await fetch(`${(import.meta as any).env.VITE_API_URL}/user`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userToken}`,
+        },
+        body: JSON.stringify({
+          firstName: editedFirstName,
+          lastName: editedLastName,
+          active: editedActive,
+          accessLevel: editedAccessLevel,
+          reportTo: editedReportsTo,
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Changes saved!');
+      } else {
+        console.error('Failed to save changes');
+      }
+    } catch (error) {
+      console.error('Error saving changes:', error);
+    }
   };
 
   return (
@@ -174,7 +197,7 @@ const Profile = () => {
               <span className="font-semibold w-20 inline-block">Email:</span>
               <span className="ml-2">{email}</span>
             </li>
-            {currAccessLevel === 1 || currAccessLevel === 2 ? (
+            {currAccessLevel >= 1 ? (
               // Render Edit button for managers and admins
               <li className="pb-2 mb-2 flex">
                 <span className="font-semibold w-20 inline-block">Active:</span>
@@ -193,7 +216,7 @@ const Profile = () => {
                   <span className="ml-2">{active ? 'Yes' : 'No'}</span>
                 </li>
               )}
-            {currAccessLevel === 1 || currAccessLevel === 2 ? (
+            {currAccessLevel >= 1 ? (
                 // Render Edit button for managers and admins
                 <li className="pb-2 mb-2 flex">
                   <span className="font-semibold w-20 inline-block">Access Level:</span>
@@ -212,7 +235,7 @@ const Profile = () => {
                   <span className="ml-2">{accessLevel}</span>
                 </li>
               )}
-              {currAccessLevel === 1 || currAccessLevel === 2 ? (
+              {currAccessLevel >= 1 ? (
                 // Render Edit button for managers and admins
                 <li className="pb-2 mb-2 flex">
                   <span className="font-semibold w-20 inline-block">Reports To:</span>
@@ -231,7 +254,7 @@ const Profile = () => {
                   <span className="ml-2">{reportsTo}</span>
                 </li>
               )}
-              {/* Employee List shown if manager */}
+              {/* Employee List shown if manager
               {currAccessLevel === 1 && (
                 <li className="pb-2 mb-2 flex">
                   <span className="font-semibold w-20 inline-block">Employee List:</span>
@@ -243,7 +266,7 @@ const Profile = () => {
                     </Link>
                   </span>
                 </li>
-              )}
+              )} */}
             </ul>
           </div>
         </div>
