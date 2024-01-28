@@ -5,8 +5,22 @@
 :root {
   /* General theme */
   --primary: #1a1a1d;
+  --primary-light: #3a3a3d;
+  --primary-dark: #121214;
+
   --secondary: #4e4e50;
+  --secondary-light: #6e6e70;
+  --secondary-dark: #38383a;
+
   --third: #6f2232;
+  --third-light: #8f4252;
+  --third-dark: #4f0222;
+
   --forth: #950740;
+  --forth-light: #b52758;
+  --forth-dark: #65041e;
+
   --fifth: #c3073f;
+  --fifth-light: #e3275f;
+  --fifth-dark: #920527;
 }
