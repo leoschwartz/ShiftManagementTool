@@ -7,7 +7,7 @@ function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn] = useAtom(isLoggedInAtom);
   const [accessLevel] = useAtom(userAccessLevelAtom);
-  
+
   const handleLogout = () => {
     // setIsLoggedIn(false);
     setIsMenuOpen(false);
@@ -34,12 +34,22 @@ function Navbar() {
               Schedule
             </Link>
             {accessLevel == 1 ? (
-            <Link to="/employeeList" className="text-white hover:text-secondary">
-              Employee List
-            </Link>) : null}
-            <Link to="/addNewUser" className="text-white hover:text-secondary">
-              Add New User
-            </Link>
+              <Link
+                to="/employeeList"
+                className="text-white hover:text-secondary"
+              >
+                Employee List
+              </Link>
+            ) : null}
+            {accessLevel == 2 && (
+              <Link
+                to="/addNewUser"
+                className="text-white hover:text-secondary"
+              >
+                Add New User
+              </Link>
+            )}
+
             <Link to="/profile" className="text-white hover:text-secondary">
               Profile
             </Link>
@@ -101,9 +111,21 @@ function Navbar() {
                     Schedule
                   </Link>
                   {accessLevel == 1 ? (
-                  <Link to="/employeeList" className="text-white hover:text-secondary">
-                    Employee List
-                  </Link>) : null}
+                    <Link
+                      to="/employeeList"
+                      className="text-white hover:text-secondary"
+                    >
+                      Employee List
+                    </Link>
+                  ) : null}
+                  {accessLevel == 2 && (
+                    <Link
+                      to="/addNewUser"
+                      className="text-white hover:text-secondary"
+                    >
+                      Add New User
+                    </Link>
+                  )}
                   <Link
                     to="/profile"
                     onClick={() => setIsMenuOpen(false)}
