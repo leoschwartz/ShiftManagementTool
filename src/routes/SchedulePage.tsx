@@ -1,11 +1,12 @@
 import React from "react";
-import Schedule from "../components/Schedule";
+import ScheduleView from "../components/ScheduleView";
 
-export default class SchedulePage extends React.Component {
-  render() { return (
+const SchedulePage = () => {
+   return (
     <section className="flex justify-center items-center" id="home">
-    <div className="absolute inset-0 bg-gradient-to-tr from-third to-fifth -z-10 opacity-50"></div>
-      <Schedule/>
+      <div className="fixed inset-0 h-full bg-gradient-to-tr from-third to-fifth -z-10 opacity-50"></div>
+      <ScheduleView scheduleUser="todo"/>
     </section>
-  )}
+  );
 }
+export default SchedulePage;
