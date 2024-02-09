@@ -9,6 +9,7 @@ import Error404 from "./routes/Error404";
 import Unauthorize from "./routes/Unauthorize";
 import AuthorizationCheck from "./components/AuthorizationCheck";
 import AddNewUserPage from "./routes/AddNewUserPage";
+import EmployeeList from "./routes/EmployeeList";
 function App() {
   return (
     <>
@@ -33,6 +34,7 @@ function App() {
             <Route path="/unauthorize" element={<Unauthorize />} />
           </Route>
           <Route path="*" element={<Error404 />}></Route>
+          <Route path="/employeeList" element={<EmployeeList />} />
         </Routes>
       </Router>
     </>

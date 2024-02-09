@@ -16,7 +16,6 @@ function Login() {
     if (data) {
       const token = data.token;
       const accessLevel = data.accessLevel;
-      console.log(data)
       setUserToken(token);
       setUserAccessLevel(accessLevel);
       navigate("/schedule");
