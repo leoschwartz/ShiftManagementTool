@@ -1,35 +1,89 @@
-import { useState } from "react";
+import { useRef , useState, useEffect } from "react";
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
+import editablePlugin from '@fullcalendar/interaction'
 import styled from "@emotion/styled";
 import { getEvents } from "../common/Shift"
 import { getShift } from "../api/getShift";
 
 const ScheduleView = () => {
+  console.log("Render " + Date.now());
   const [showViewPanel, setShowViewPanel] = useState(false);
   const [activeEvent, setActiveEvent] = useState({});
+  const [intilized, setInitilized] = useState(false);
   const scheduleUser = "todo";
-  
-  //while I'd love to split this into two components, they really need access to each other for the editing functionality
-  const viewEvent = async (eventClickInfo) => {
-    const e = await getShift(eventClickInfo.event.extendedProps.eventId);
-    setActiveEvent(e);
-    setShowViewPanel(true);
+  let calendarRef = useRef({});
+
+  //HACK!!
+  const Now = new Date();
+  const Monday = new Date(Now.getDate() - Now.getDay() + (Now.getDay() == 0 ? -6 : 1));
+  const visibleRange = {
+    start: Monday.toLocaleDateString([], {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }),
+    end: new Date(Monday + 5).toLocaleDateString([], {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+  })};
+  const [calendarStateHack, setCalendarStateHack] = useState({
+    events: [],//await getEvents(scheduleUser, {visibleRange: visibleRange}),
+    scroll: 0,
+    visibleRange: visibleRange
+  });
+  if (!intilized)
+    getEvents(scheduleUser, {visibleRange: visibleRange}).then(function(env) {
+      console.log("Got initials! " + Date.now());
+      setInitilized(true);
+      setCalendarStateHack({
+        events: env,
+        scroll: calendarStateHack.scroll,
+        visibleRange: calendarStateHack.visibleRange
+      });
+      loadStateHack();
+    });
+  function saveStateHack() {
+    console.log("Saving! " + Date.now());
+    if (!calendarRef) {console.log("ABORT!");return 0}
+    setCalendarStateHack({
+      events: calendarRef.current.getApi().getEvents(),
+      //scroll: document.querySelector(".fc-scroller-liquid-absolute").scrollHeight,
+      visibleRange: calendarRef.current.getApi().visibleRange,
+    });
   }
+  function loadStateHack() {
+    console.log("Loading! " + Date.now());
+    if (!calendarRef) {console.log("ABORT!");return 0}
+    //calendarRef.current.getApi().visibleRange = calendarStateHack.visibleRange;
+    //document.querySelector(".fc-scroller-liquid-absolute").scrollHeight = calendarStateHack.scroll;
+    //for (var i = 0; i < calendarStateHack.events.length; i++)
+    //calendarRef.current.getApi().eventAdd({
+    //    event: calendarStateHack.events[i],
+    //});
+  }
+  useEffect(() => {
+    if (intilized)
+    loadStateHack();
+    return () => {
+      if (intilized)
+      saveStateHack();
+    };
+  }, []);
+
   var pseudoNow = new Date();
   if (pseudoNow.getHours() > 2) pseudoNow.setHours(pseudoNow.getHours() - 2); //center on now instead of top
   const options = {
-    plugins: [ timeGridPlugin ],
+    plugins: [ timeGridPlugin,editablePlugin ],
+    editable: true,
+    ref: calendarRef,
     initialView: 'timeGridWeek',
     headerToolbar: {
       left: 'prev,next',
       center: 'title',
       right: 'timeGridWeek,timeGridDay'
     },
-    //https://github.com/fullcalendar/fullcalendar/issues/4638 - something for later...
-    /*footerToolbar: {
-      right: 'prev,next'
-    },*/
     allDaySlot: false,
     slotDuration:"00:05:00",
     slotLabelInterval:"01:00",
@@ -59,11 +113,16 @@ const ScheduleView = () => {
     nowIndicator : true,
     height: 512,
     eventColor: "var(--forth)",
-    events: async function( fetchInfo, successCallback/*, failureCallback*/ ) {
-      const events = await getEvents(scheduleUser,fetchInfo);
-      successCallback(events);
+    events: async (fetchInfo, successCallback) => {
+      //const events = await getEvents(scheduleUser, fetchInfo);
+      //successCallback(events);
+      successCallback(calendarStateHack.events);
     },
-    eventClick: viewEvent,
+    eventClick: async (eventClickInfo) => {
+      const e = await getShift(eventClickInfo.event.extendedProps.eventId);
+      setActiveEvent(e);
+      setShowViewPanel(true);
+    },
   };
 
   //this doesn't work!!!!
