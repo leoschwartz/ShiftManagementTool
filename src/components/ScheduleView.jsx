@@ -20,7 +20,8 @@ const ScheduleView = ({ scheduleUser }) => {
   const calendarStateHack = useRef({
     events: [],
     scroll: 0,
-    visibleRange: StartTime
+    visibleRange: StartTime,
+    cachedRange: null
   });
   function saveStateHack() {
     if (!calendarRef) {console.warn("Missing calendarRef!");return 0}
@@ -32,7 +33,8 @@ const ScheduleView = ({ scheduleUser }) => {
           year: 'numeric',
           month: '2-digit',
           day: '2-digit'
-      })
+      }),
+      cachedRange: calendarStateHack.current.cachedRange
     };
   }
 
@@ -91,10 +93,22 @@ const ScheduleView = ({ scheduleUser }) => {
     nowIndicator : true,
     height: 512,
     eventColor: "var(--forth)",
-    events: async (fetchInfo, successCallback) => {
-      //const events = await getEvents(scheduleUser, fetchInfo);
-      //successCallback(events);
-      successCallback(calendarStateHack.current.events);
+    events: async (fetchInfo, successCallback) => { //TODO why is this called twice when opening an event??
+      //https://fullcalendar.io/docs/events-function
+      //The current page of events is cached for when the comp re-renders. TODO save extra events outside of cache for editing
+      const range = {start: fetchInfo.start, end: fetchInfo.end};
+      var isCached = calendarStateHack.current.cachedRange != null;
+      if (isCached) {
+        isCached = (range.start.toDateString() == calendarStateHack.current.cachedRange.start.toDateString() 
+        || range.end.toDateString() == calendarStateHack.current.cachedRange.end.toDateString());
+      }
+      if (!isCached) {
+        calendarStateHack.current.cachedRange = range;
+        const events = await getEvents(scheduleUser, fetchInfo);
+        successCallback(events);
+      } else {
+        successCallback(calendarStateHack.current.events);
+      }
     },
     eventClick: async (eventClickInfo) => {
       const e = await getShift(eventClickInfo.event.extendedProps.eventId);
