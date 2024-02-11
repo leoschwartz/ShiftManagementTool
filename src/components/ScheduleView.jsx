@@ -26,7 +26,7 @@ const ScheduleView = ({ scheduleUser }) => {
     const ar = calendarRef.current.getApi().currentData.dateProfile.activeRange;
     calendarStateHack.current = {
       events: calendarRef.current.getApi().getEvents(),
-      //scroll: document.querySelector(".fc-scroller-liquid-absolute").scrollHeight,
+      scroll: document.querySelector(".fc-scroller-liquid-absolute").scrollTop, //better than nothing...
       visibleRange: ar.start.toLocaleDateString([], {
           year: 'numeric',
           month: '2-digit',
@@ -34,11 +34,6 @@ const ScheduleView = ({ scheduleUser }) => {
       })
     };
   }
-  /*function loadStateHack() {
-    console.log("Loading! " + Date.now());
-    calendarRef.current.getApi().visibleRange = calendarStateHack.visibleRange;
-    //document.querySelector(".fc-scroller-liquid-absolute").scrollHeight = calendarStateHack.scroll;
-  }*/
 
   if (!initialized) {
     getEvents(scheduleUser, {visibleRange: "DATA MISSING!"}).then(function(env) {
@@ -52,6 +47,9 @@ const ScheduleView = ({ scheduleUser }) => {
   }
   var pseudoNow = new Date();
   if (pseudoNow.getHours() > 2) pseudoNow.setHours(pseudoNow.getHours() - 2); //center on now instead of top
+  // MAGIC NUMBERS: 80,80,1.3333 - font-size to pixel ratios for 3pt
+  const calcTimeEstimateString = String(Math.floor(calendarStateHack.current.scroll / 80)).padStart(2, '0') 
+  + ":" + String(Math.floor((calendarStateHack.current.scroll % 80) / 1.333333)).padStart(2, '0');
   const options = {
     plugins: [ timeGridPlugin/*,editablePlugin*/ ],
     //editable: true,
@@ -85,7 +83,7 @@ const ScheduleView = ({ scheduleUser }) => {
     //hiddenDays: //worth considering if we could hide empty days...
     dayHeaderFormat: { weekday: 'short' },
     businessHours : true, //good for prototype, unsure if permanent
-    scrollTime : pseudoNow.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false}),
+    scrollTime : calendarStateHack.current.scroll ? calcTimeEstimateString : pseudoNow.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false}),
     initialDate: calendarStateHack.current.visibleRange,
     scrollTimeReset: false,
     //validRange : //depending on how generator works we might want this
@@ -108,6 +106,7 @@ const ScheduleView = ({ scheduleUser }) => {
 
   //fullcalendar styling is either this or a bootstrap style
   // td { font-size: 3pt; } controls the entire chart scale!!!
+  // MUST REMAIN SYNCED WITH SCROLLTIME!
   const TableStyleWrapper = styled.div`
   td, th, table {
     border-color: #222 !important;
@@ -144,7 +143,7 @@ const ScheduleView = ({ scheduleUser }) => {
               saveStateHack();
               setShowViewPanel(false);
             }}>
-          <div className="inline-block w-6/12 h-full m-auto align-top gridBlock mb-6">
+          <div className="inline-block w-6/12 m-auto align-top">
             <div className="m-3 h-full border-2 border-solid rounded border-black text-neutral-400 bg-secondary bg-gradient-to-tr from-secondary to-neutral-600">
               <hr className="mb-2 border-black"/>
               <h2 id="shiftData-name" className="text-2xl ml-5 mr-5 rounded p-0.5 bg-forth text-white font-bold">{activeEvent.name}</h2>
