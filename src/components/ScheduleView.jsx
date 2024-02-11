@@ -9,7 +9,6 @@ import { getShift } from "../api/getShift";
 const ScheduleView = ({ scheduleUser }) => {
   const [showViewPanel, setShowViewPanel] = useState(false);
   const [activeEvent, setActiveEvent] = useState({});
-  const [initialized, setInitialized] = useState(false);
   const calendarRef = useRef({});
   var renderedCalendar;
 
@@ -36,17 +35,6 @@ const ScheduleView = ({ scheduleUser }) => {
       }),
       cachedRange: calendarStateHack.current.cachedRange
     };
-  }
-
-  if (!initialized) {
-    getEvents(scheduleUser, {visibleRange: "DATA MISSING!"}).then(function(env) {
-      console.warn("Check for multiple render phases!");
-      //https://legacy.reactjs.org/docs/strict-mode.html#detecting-unexpected-side-effects
-      //https://stackoverflow.com/questions/48846289/why-is-my-react-component-is-rendering-twice
-      calendarStateHack.current.events = env;
-      setInitialized(true);
-    });
-    return <div></div>; //await getEvents callback
   }
   var pseudoNow = new Date();
   if (pseudoNow.getHours() > 2) pseudoNow.setHours(pseudoNow.getHours() - 2); //center on now instead of top
@@ -105,6 +93,7 @@ const ScheduleView = ({ scheduleUser }) => {
       if (!isCached) {
         calendarStateHack.current.cachedRange = range;
         const events = await getEvents(scheduleUser, fetchInfo);
+        calendarStateHack.current.events = events;
         successCallback(events);
       } else {
         successCallback(calendarStateHack.current.events);
