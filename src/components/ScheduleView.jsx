@@ -1,82 +1,60 @@
-import { useRef , useState, useEffect } from "react";
+import { useRef , useState } from "react";
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import editablePlugin from '@fullcalendar/interaction'
+//import editablePlugin from '@fullcalendar/interaction'
 import styled from "@emotion/styled";
 import { getEvents } from "../common/Shift"
 import { getShift } from "../api/getShift";
 
-const ScheduleView = () => {
-  console.log("Render " + Date.now());
+const ScheduleView = ({ scheduleUser }) => {
   const [showViewPanel, setShowViewPanel] = useState(false);
   const [activeEvent, setActiveEvent] = useState({});
-  const [intilized, setInitilized] = useState(false);
-  const scheduleUser = "todo";
-  let calendarRef = useRef({});
+  const [initialized, setInitialized] = useState(false);
+  const calendarRef = useRef({});
+  var renderedCalendar;
 
   //HACK!!
-  const Now = new Date();
-  const Monday = new Date(Now.getDate() - Now.getDay() + (Now.getDay() == 0 ? -6 : 1));
-  const visibleRange = {
-    start: Monday.toLocaleDateString([], {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    }),
-    end: new Date(Monday + 5).toLocaleDateString([], {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-  })};
-  const [calendarStateHack, setCalendarStateHack] = useState({
-    events: [],//await getEvents(scheduleUser, {visibleRange: visibleRange}),
+  var StartTime = new Date();
+  StartTime.setDate(StartTime.getDate() - (StartTime.getDay() + 6) % 7);
+  const calendarStateHack = useRef({
+    events: [],
     scroll: 0,
-    visibleRange: visibleRange
+    visibleRange: StartTime
   });
-  if (!intilized)
-    getEvents(scheduleUser, {visibleRange: visibleRange}).then(function(env) {
-      console.log("Got initials! " + Date.now());
-      setInitilized(true);
-      setCalendarStateHack({
-        events: env,
-        scroll: calendarStateHack.scroll,
-        visibleRange: calendarStateHack.visibleRange
-      });
-      loadStateHack();
-    });
   function saveStateHack() {
-    console.log("Saving! " + Date.now());
-    if (!calendarRef) {console.log("ABORT!");return 0}
-    setCalendarStateHack({
+    if (!calendarRef) {console.warn("Missing calendarRef!");return 0}
+    const ar = calendarRef.current.getApi().currentData.dateProfile.activeRange;
+    calendarStateHack.current = {
       events: calendarRef.current.getApi().getEvents(),
       //scroll: document.querySelector(".fc-scroller-liquid-absolute").scrollHeight,
-      visibleRange: calendarRef.current.getApi().visibleRange,
-    });
-  }
-  function loadStateHack() {
-    console.log("Loading! " + Date.now());
-    if (!calendarRef) {console.log("ABORT!");return 0}
-    //calendarRef.current.getApi().visibleRange = calendarStateHack.visibleRange;
-    //document.querySelector(".fc-scroller-liquid-absolute").scrollHeight = calendarStateHack.scroll;
-    //for (var i = 0; i < calendarStateHack.events.length; i++)
-    //calendarRef.current.getApi().eventAdd({
-    //    event: calendarStateHack.events[i],
-    //});
-  }
-  useEffect(() => {
-    if (intilized)
-    loadStateHack();
-    return () => {
-      if (intilized)
-      saveStateHack();
+      visibleRange: ar.start.toLocaleDateString([], {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+      })
     };
-  }, []);
+  }
+  /*function loadStateHack() {
+    console.log("Loading! " + Date.now());
+    calendarRef.current.getApi().visibleRange = calendarStateHack.visibleRange;
+    //document.querySelector(".fc-scroller-liquid-absolute").scrollHeight = calendarStateHack.scroll;
+  }*/
 
+  if (!initialized) {
+    getEvents(scheduleUser, {visibleRange: "DATA MISSING!"}).then(function(env) {
+      console.warn("Check for multiple render phases!");
+      //https://legacy.reactjs.org/docs/strict-mode.html#detecting-unexpected-side-effects
+      //https://stackoverflow.com/questions/48846289/why-is-my-react-component-is-rendering-twice
+      calendarStateHack.current.events = env;
+      setInitialized(true);
+    });
+    return <div></div>; //await getEvents callback
+  }
   var pseudoNow = new Date();
   if (pseudoNow.getHours() > 2) pseudoNow.setHours(pseudoNow.getHours() - 2); //center on now instead of top
   const options = {
-    plugins: [ timeGridPlugin,editablePlugin ],
-    editable: true,
+    plugins: [ timeGridPlugin/*,editablePlugin*/ ],
+    //editable: true,
     ref: calendarRef,
     initialView: 'timeGridWeek',
     headerToolbar: {
@@ -108,6 +86,7 @@ const ScheduleView = () => {
     dayHeaderFormat: { weekday: 'short' },
     businessHours : true, //good for prototype, unsure if permanent
     scrollTime : pseudoNow.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false}),
+    initialDate: calendarStateHack.current.visibleRange,
     scrollTimeReset: false,
     //validRange : //depending on how generator works we might want this
     nowIndicator : true,
@@ -116,17 +95,16 @@ const ScheduleView = () => {
     events: async (fetchInfo, successCallback) => {
       //const events = await getEvents(scheduleUser, fetchInfo);
       //successCallback(events);
-      successCallback(calendarStateHack.events);
+      successCallback(calendarStateHack.current.events);
     },
     eventClick: async (eventClickInfo) => {
       const e = await getShift(eventClickInfo.event.extendedProps.eventId);
+      saveStateHack()
       setActiveEvent(e);
       setShowViewPanel(true);
     },
   };
-
-  //this doesn't work!!!!
-  const [renderedCalendar] = useState(<FullCalendar {...options}/>);
+  renderedCalendar = {current: <FullCalendar {...options}/> };
 
   //fullcalendar styling is either this or a bootstrap style
   // td { font-size: 3pt; } controls the entire chart scale!!!
@@ -149,7 +127,7 @@ const ScheduleView = () => {
   #fc-dom-2 {
     margin-left: 6px;
     margin-right:6px;
-    font-size:16pt;
+    font-size:16pt !important;
   }
   .fc-event {
     font-size: 12pt;
@@ -163,6 +141,7 @@ const ScheduleView = () => {
       {showViewPanel && (
         <div className="fixed inset-0 flex text-center items-center justify-center bg-black bg-opacity-50 p-8 z-10" 
             onClick={() => {
+              saveStateHack();
               setShowViewPanel(false);
             }}>
           <div className="inline-block w-6/12 h-full m-auto align-top gridBlock mb-6">
@@ -194,7 +173,7 @@ const ScheduleView = () => {
       <div className="inline-block w-6/12 h-full m-auto align-top gridBlock mb-6">
         <div className="m-3 h-full border-2 border-solid rounded border-black text-neutral-400 bg-secondary bg-gradient-to-tr from-secondary to-neutral-600">
           <TableStyleWrapper>
-            {renderedCalendar}
+            {renderedCalendar.current}
           </TableStyleWrapper>
         </div>
       </div>

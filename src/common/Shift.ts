@@ -33,9 +33,11 @@ export function shiftToEvent(shift) {
 }
 //Retrieve FullCalendar events
 export async function getEvents(user, fetchInfo) {
-    return (await getShifts(user,fetchInfo)).map((x) => { 
-        return shiftToEvent(x);
+    const events : Object[] = [];
+    (await getShifts(user,fetchInfo)).map((x) => { 
+        events.push(shiftToEvent(x));
     });
+    return events;
 }
 export async function getEvent(id) {
     const returned = await getShift(id);
