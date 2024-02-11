@@ -13,7 +13,8 @@ const ScheduleView = ({ scheduleUser }) => {
   const calendarRef = useRef({});
   var renderedCalendar;
 
-  //HACK!!
+  //HACK!
+  //saveStateHack stores event objects, scroll position, and page. This is for recovering from state changes.
   var StartTime = new Date();
   StartTime.setDate(StartTime.getDate() - (StartTime.getDay() + 6) % 7);
   const calendarStateHack = useRef({
@@ -123,7 +124,7 @@ const ScheduleView = ({ scheduleUser }) => {
   .fc-button-active {
     background-color: var(--third) !important;
   }
-  #fc-dom-2 {
+  .fc-toolbar-title {
     margin-left: 6px;
     margin-right:6px;
     font-size:16pt !important;
@@ -143,7 +144,7 @@ const ScheduleView = ({ scheduleUser }) => {
               saveStateHack();
               setShowViewPanel(false);
             }}>
-          <div className="inline-block w-6/12 m-auto align-top">
+          <div className="inline-block m-auto align-top">
             <div className="m-3 h-full border-2 border-solid rounded border-black text-neutral-400 bg-secondary bg-gradient-to-tr from-secondary to-neutral-600">
               <hr className="mb-2 border-black"/>
               <h2 id="shiftData-name" className="text-2xl ml-5 mr-5 rounded p-0.5 bg-forth text-white font-bold">{activeEvent.name}</h2>
@@ -169,7 +170,7 @@ const ScheduleView = ({ scheduleUser }) => {
         </div>
       )}
 
-      <div className="inline-block w-6/12 h-full m-auto align-top gridBlock mb-6">
+      <div className="inline-block h-full m-auto w-full align-top">
         <div className="m-3 h-full border-2 border-solid rounded border-black text-neutral-400 bg-secondary bg-gradient-to-tr from-secondary to-neutral-600">
           <TableStyleWrapper>
             {renderedCalendar.current}

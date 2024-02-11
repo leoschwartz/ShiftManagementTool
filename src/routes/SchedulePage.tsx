@@ -5,7 +5,9 @@ const SchedulePage = () => {
    return (
     <section className="flex justify-center items-center" id="home">
       <div className="fixed inset-0 h-full bg-gradient-to-tr from-third to-fifth -z-10 opacity-50"></div>
-      <ScheduleView scheduleUser="todo"/>
+      <div className="max-w-xl w-full">
+        <ScheduleView scheduleUser="todo"/>
+      </div>
     </section>
   );
 }
