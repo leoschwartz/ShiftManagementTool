@@ -11,6 +11,10 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
   const [showViewPanel, setShowViewPanel] = useState(false);
   const [activeEvent, setActiveEvent] = useState({});
   const calendarRef = useRef({});
+  const editorName = useRef(null);
+  const editorDesc = useRef(null);
+  const editorDate = useRef(null);
+  const editorComplete = useRef(null);
   var renderedCalendar;
 
   //HACK!
@@ -18,7 +22,7 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
   var StartTime = new Date();
   StartTime.setDate(StartTime.getDate() - (StartTime.getDay() + 6) % 7);
   const calendarState = useRef({
-    events: [], //Shift object cache, for re-rendering the same page
+    events: [], //Shift object cache, for re-rendering the same page. May reflect edits early! Use with care.
     scroll: 0, //Pixel scroll position
     visibleRange: StartTime, //A day from the current week
     cachedRange: null, //Range of dates current cached
@@ -77,6 +81,7 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
 
   //Return the event object for a given id from cache if possible
   async function getEventObject(id) {
+    //This moves a reference instead of making an actual copy! Copy not necessary, but might be later.
     var pos = calendarState.current.events.findIndex(i => i.id == id);
     if (pos != -1) return calendarState.current.events[pos];
     pos = calendarState.current.shiftsEdited.findIndex(i => i.id == id);
@@ -108,12 +113,17 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
 
   function saveEventChanges() {
     saveCalendarState();
-    const editPanel = document.getElementById("shiftEditPanel");
-    console.log("Save!");
-    console.log(activeEvent);
-    console.log(editPanel);
-    //TODO
-    //Switch to refs instead of id?
+    const editEvent = getEditedEventObject(activeEvent.id);
+    //doesn't check for any actual changes... todo? 
+    editEvent.description = editorDesc.current.value;
+    editEvent.completed = editorComplete.current.checked;
+    editEvent.name = editorName.current.value;
+    var stringTok = editorDate.current.value.split("-");
+    stringTok[1] = Number(stringTok[1]) - 1; //0th month correction
+    var times = [activeEvent.startTime.getHours(), activeEvent.startTime.getMinutes(), activeEvent.startTime.getSeconds()];
+    editEvent.startTime = new Date(stringTok[0], stringTok[1], stringTok[2], times[0], times[1], times[2]);
+    times = [activeEvent.endTime.getHours(), activeEvent.endTime.getMinutes(), activeEvent.endTime.getSeconds()];
+    editEvent.endTime = new Date(stringTok[0], stringTok[1], stringTok[2], times[0], times[1], times[2]);
     setShowViewPanel(false);
   }
 
@@ -254,7 +264,7 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
                 </div>
                 <div className="mt-2">Manager/Supervisor: <span className="text-neutral-200">{activeEvent.assigner}</span></div>
                 <div className="mt-2">Description:</div>
-                <div className="min-h-1/2 h-min ml-5 mr-5 mt-1 h-full border-2 border-solid rounded border-neutral-800 bg-neutral-700">
+                <div className="min-h-1/2 h-min min-w-80 ml-5 mr-5 mt-1 h-full border-2 border-solid rounded border-neutral-800 bg-neutral-700">
                     <div id="shiftData-desc" className="text-neutral-200">{activeEvent.description}</div>
                 </div>
                 <div className="m-2">Completed:
@@ -279,18 +289,18 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
                 event.stopPropagation()
               }}>
                 <hr className="mb-2 border-black"/>
-                <h2 id="shiftData-name" className="text-2xl ml-5 mr-5 rounded p-0.5 bg-forth text-white font-bold">
-                  <input id="shiftData-name" className="transparent-input bg-forth text-center border-2 border-solid rounded border-black" defaultValue={activeEvent.name}></input>
+                <h2 className="text-2xl ml-5 mr-5 rounded p-0.5 bg-forth text-white font-bold">
+                  <input ref={editorName} id="shiftData-name" className="transparent-input bg-forth text-center border-2 border-solid rounded border-black" defaultValue={activeEvent.name}></input>
                 </h2>
-                <input type="date" id="shiftData-date" className="transparent-input mt-2 text-neutral-200" defaultValue={activeEvent.startTime.toISOString().split('T')[0]}></input>
+                <input type="date"  ref={editorDate} id="shiftData-date" className="transparent-input mt-2 text-neutral-200" defaultValue={activeEvent.startTime.toISOString().split('T')[0]}></input>
                 <div id="shiftData-time" className="mt-2 text-neutral-200">
                   {activeEvent.startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' + activeEvent.endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 </div>
                 <div className="mt-2">Manager/Supervisor: <span className="text-neutral-200">{activeEvent.assigner}</span></div>
                 <div className="mt-2">Description:</div>
-                <textarea id="shiftData-desc" className="min-h-1/2 h-min ml-5 mr-5 mt-1 h-full border-2 border-solid rounded border-neutral-800 bg-neutral-700" defaultValue={activeEvent.description}></textarea>
+                <textarea id="shiftData-desc"  ref={editorDesc} className="min-w-80 min-h-1/2 h-min ml-5 mr-5 mt-1 h-full border-2 border-solid rounded border-neutral-800 bg-neutral-700" defaultValue={activeEvent.description}></textarea>
                 <div className="m-2">Completed:
-                  <input id="shiftData-completed" type="checkbox" className="transparent-input ml-2 mr-3"></input>
+                  <input id="shiftData-completed"  ref={editorComplete} type="checkbox" className="transparent-input ml-2 mr-3"></input>
                 </div> 
                 <button id="shiftSaveBtn" className="mb-3 text-lg bg-forth align-middle hover:bg-fifth text-white px-1 rounded" onClick={saveEventChanges}>
                   Save Changes
