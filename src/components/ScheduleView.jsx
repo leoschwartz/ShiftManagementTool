@@ -6,6 +6,7 @@ import styled from "@emotion/styled";
 import { shiftToEvent } from "../common/Shift"
 import { getShift } from "../api/getShift";
 import { getShifts } from "../api/getShifts";
+import {flagShiftCompleted} from "../api/flagShiftCompleted"
 
 const ScheduleView = ({ scheduleUser, allowEdit }) => {
   const [showViewPanel, setShowViewPanel] = useState(false);
@@ -30,7 +31,6 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
     shiftsRemoved: [], //Shift ids
     shiftsAdded: [], //Shift objects (ids will change on save!)
   });
-
   //Return a list of FullCalendar event-parsable objects to render
   async function getPageEvents(fetchInfo, successCallback) {
     //Get real events
@@ -77,10 +77,8 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
     }
     successCallback(events.map((e) => shiftToEvent(e)));
   }
-
   //Return the event object for a given id from cache if possible
   async function getEventObject(id) {
-    //This moves a reference instead of making an actual copy! Copy not necessary, but might be later.
     var pos = calendarState.current.events.findIndex(i => i.id == id);
     if (pos != -1) return calendarState.current.events[pos];
     pos = calendarState.current.shiftsEdited.findIndex(i => i.id == id);
@@ -90,9 +88,9 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
     console.warn("Unable to find event object #" + id); //this should not happen!
     return await getShift(id);
   }
-
   //Return the shiftsEdited or shiftsAdded object with this id
   //If none are found, create a shiftsAdded object and return it
+  //This moves a reference instead of making an actual copy! Copy not necessary, but might be later.
   function getEditedEventObject (id) {
     var pos = calendarState.current.shiftsEdited.findIndex(i => i.id == id);
     if (pos != -1) return calendarState.current.shiftsEdited[pos];
@@ -101,15 +99,18 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
     const event = calendarState.current.events.find(i => i.id == id);
     return calendarState.current.shiftsEdited[calendarState.current.shiftsEdited.push(event) - 1];
   }
-
-  function markShiftCompleted() {
+  //Employee-view mark completion. Doesn't use the cache - just applies immediately.
+  async function markShiftCompleted() {
     saveCalendarState();
-    console.log("Save!");
-    console.log(activeEvent);
-    //TODO
-    setShowViewPanel(false);
+    await flagShiftCompleted(activeEvent.id);
+    calendarState.current.events[calendarState.current.events.indexOf(activeEvent)] = await getShift(activeEvent.id); //ensure sync in case api fails
   }
-
+  //Pass pending edits to API, wipe state
+  async function saveEdits() {
+    await flagShiftCompleted(scheduleUser, calendarState.current.shiftsEdited, calendarState.current.shiftsRemoved, calendarState.current.shiftsRemoved);
+    window.location.reload(); //nuclear option
+  }
+  //Save changes made in the UI to the edited event cache
   function saveEventChanges() {
     saveCalendarState();
     const editEvent = getEditedEventObject(activeEvent.id);
@@ -125,7 +126,7 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
     editEvent.endTime = new Date(stringTok[0], stringTok[1], stringTok[2], times[0], times[1], times[2]);
     setShowViewPanel(false);
   }
-
+  //Add the shift to delete cache
   function promptDeleteEvent() {
     if (confirm("Are you sure you want to delete this shift?")) {
       saveCalendarState();
@@ -133,7 +134,6 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
       setShowViewPanel(false);
     }
   }
-
   //Save the calendar scroll position and range for the re-render
   function saveCalendarState() {
     calendarState.current.scroll= document.querySelector(".fc-scroller-liquid-absolute").scrollTop;
@@ -249,7 +249,7 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
   }`
   //There are two copies of the viewing UI - one for editing, one for viewing. I did try combining them but it was unreadable after that
   return (
-    <section className="relative w-full" id="schedule">
+    <section className="relative w-full">
       <GlobalStyleWrapper>
         {showViewPanel && !allowEdit && (
           <div className="fixed inset-0 flex text-center items-center justify-center bg-black bg-opacity-50 p-8 z-10" 
@@ -257,28 +257,30 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
                 saveCalendarState();
                 setShowViewPanel(false);
               }}>
-            <div id="shiftViewPanel" className="inline-block m-auto align-top">
+            <div className="inline-block m-auto align-top">
               <div className="m-3 h-full border-2 border-solid rounded border-black text-neutral-400 bg-secondary bg-gradient-to-tr from-secondary to-neutral-600" onClick={(event) => {
                 event.stopPropagation()
               }}>
                 <hr className="mb-2 border-black"/>
-                <h2 id="shiftData-name" className="text-2xl ml-5 mr-5 rounded p-0.5 bg-forth text-white font-bold">{activeEvent.name}</h2>
-                <div id="shiftData-date" className="mt-2 text-neutral-200">
+                <h2 className="text-2xl ml-5 mr-5 rounded p-0.5 bg-forth text-white font-bold">{activeEvent.name}</h2>
+                <div className="mt-2 text-neutral-200">
                   {activeEvent.startTime.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric'})}
                 </div>
-                <div id="shiftData-time" className="mt-2 text-neutral-200">
+                <div className="mt-2 text-neutral-200">
                   {activeEvent.startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' + activeEvent.endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 </div>
                 <div className="mt-2">Manager/Supervisor: <span className="text-neutral-200">{activeEvent.assigner}</span></div>
                 <div className="mt-2">Description:</div>
                 <div className="min-h-1/2 h-min min-w-80 ml-5 mr-5 mt-1 h-full border-2 border-solid rounded border-neutral-800 bg-neutral-700">
-                    <div id="shiftData-desc" className="text-neutral-200">{activeEvent.description}</div>
+                    <div className="text-neutral-200">{activeEvent.description}</div>
                 </div>
                 <div className="m-2">Completed:
-                  <input id="shiftData-completed" type="checkbox" className="ml-2 mr-3" disabled></input>
-                  <button id="shiftCompletedBtn" className="bg-forth align-middle hover:bg-fifth text-white px-1 rounded" onClick={markShiftCompleted}>
-                    Mark as Completed
-                  </button>
+                  <input type="checkbox" className="ml-2 mr-3" disabled defaultChecked={activeEvent.completed}></input>
+                  {!activeEvent.completed && (
+                    <button className="bg-forth align-middle hover:bg-fifth text-white px-1 rounded" onClick={markShiftCompleted}>
+                      Mark as Completed
+                    </button>
+                  )}
                 </div> 
               </div>
             </div>
@@ -291,28 +293,28 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
                 saveCalendarState();
                 setShowViewPanel(false);
               }}>
-            <div id="shiftEditPanel" className="inline-block m-auto align-top">
+            <div className="inline-block m-auto align-top">
               <div className="m-3 h-full border-2 border-solid rounded border-black text-neutral-400 bg-secondary bg-gradient-to-tr from-secondary to-neutral-600" onClick={(event) => {
                 event.stopPropagation()
               }}>
                 <hr className="mb-2 border-black"/>
                 <h2 className="text-2xl ml-5 mr-5 rounded p-0.5 bg-forth text-white font-bold">
-                  <input ref={editorName} id="shiftData-name" className="transparent-input bg-forth text-center border-2 border-solid rounded border-black" defaultValue={activeEvent.name}></input>
+                  <input ref={editorName} className="transparent-input bg-forth text-center border-2 border-solid rounded border-black" defaultValue={activeEvent.name}></input>
                 </h2>
-                <input type="date"  ref={editorDate} id="shiftData-date" className="transparent-input mt-2 text-neutral-200" defaultValue={activeEvent.startTime.toISOString().split('T')[0]}></input>
-                <div id="shiftData-time" className="mt-2 text-neutral-200">
+                <input type="date"  ref={editorDate} className="transparent-input mt-2 text-neutral-200" defaultValue={activeEvent.startTime.toISOString().split('T')[0]}></input>
+                <div className="mt-2 text-neutral-200">
                   {activeEvent.startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' + activeEvent.endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 </div>
                 <div className="mt-2">Manager/Supervisor: <span className="text-neutral-200">{activeEvent.assigner}</span></div>
                 <div className="mt-2">Description:</div>
-                <textarea id="shiftData-desc"  ref={editorDesc} className="min-w-80 min-h-1/2 h-min ml-5 mr-5 mt-1 h-full border-2 border-solid rounded border-neutral-800 bg-neutral-700" defaultValue={activeEvent.description}></textarea>
+                <textarea ref={editorDesc} className="min-w-80 min-h-1/2 h-min ml-5 mr-5 mt-1 h-full border-2 border-solid rounded border-neutral-800 bg-neutral-700" defaultValue={activeEvent.description}></textarea>
                 <div className="m-2">Completed:
-                  <input id="shiftData-completed"  ref={editorComplete} type="checkbox" className="transparent-input ml-2 mr-3"></input>
+                  <input ref={editorComplete} type="checkbox" className="transparent-input ml-2 mr-3" defaultChecked={activeEvent.completed}></input>
                 </div> 
-                <button id="shiftSaveBtn" className="mb-3 text-lg bg-forth align-middle hover:bg-fifth text-white px-1 rounded" onClick={saveEventChanges}>
+                <button className="mb-3 text-lg bg-forth align-middle hover:bg-fifth text-white px-1 rounded" onClick={saveEventChanges}>
                   Save Changes
                 </button>
-                <button id="shiftSaveBtn" className="ml-6 mb-3 text-lg bg-forth align-middle hover:bg-fifth text-white px-1 rounded" onClick={promptDeleteEvent}>
+                <button className="ml-6 mb-3 text-lg bg-forth align-middle hover:bg-fifth text-white px-1 rounded" onClick={promptDeleteEvent}>
                   Delete
                 </button>
               </div>
@@ -320,11 +322,14 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
           </div>
         )}
 
-        <div className="inline-block h-full m-auto w-full align-top">
+        <div className="inline-block h-full m-auto w-full align-top text-center">
           <div className="m-3 h-full border-2 border-solid rounded border-black text-neutral-400 bg-secondary bg-gradient-to-tr from-secondary to-neutral-600">
             <TableStyleWrapper>
               {renderedCalendar.current}
             </TableStyleWrapper>
+            {allowEdit && (
+              <button className="m-3 text-xl bg-forth align-middle hover:bg-fifth text-white px-1 rounded" onClick={saveEdits}>Save Changes</button>
+            )}
           </div>
         </div>
       </GlobalStyleWrapper>
