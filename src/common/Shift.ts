@@ -24,8 +24,8 @@ export class Shift {
 export function shiftToEvent(shift) {
     return {
         title: shift.name,
-        start: shift.startTime.toISOString(),
-        end : shift.endTime.toISOString(),
+        start: shift.startTime,
+        end : shift.endTime,
         extendedProps: {
             eventId: shift.id
         },

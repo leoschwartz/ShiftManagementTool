@@ -53,7 +53,6 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
         month: '2-digit',
         day: '2-digit'
     });
-
     if (allowEdit) {
       //Remove pending removals
       events = events.filter(function(event) {
@@ -114,7 +113,7 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
   function saveEventChanges() {
     saveCalendarState();
     const editEvent = getEditedEventObject(activeEvent.id);
-    //doesn't check for any actual changes... todo? 
+    //doesn't check for any actual changes... todo?
     editEvent.description = editorDesc.current.value;
     editEvent.completed = editorComplete.current.checked;
     editEvent.name = editorName.current.value;
@@ -125,6 +124,14 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
     times = [activeEvent.endTime.getHours(), activeEvent.endTime.getMinutes(), activeEvent.endTime.getSeconds()];
     editEvent.endTime = new Date(stringTok[0], stringTok[1], stringTok[2], times[0], times[1], times[2]);
     setShowViewPanel(false);
+  }
+
+  function promptDeleteEvent() {
+    if (confirm("Are you sure you want to delete this shift?")) {
+      saveCalendarState();
+      calendarState.current.shiftsRemoved.push(activeEvent.id);
+      setShowViewPanel(false);
+    }
   }
 
   //Save the calendar scroll position and range for the re-render
@@ -304,6 +311,9 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
                 </div> 
                 <button id="shiftSaveBtn" className="mb-3 text-lg bg-forth align-middle hover:bg-fifth text-white px-1 rounded" onClick={saveEventChanges}>
                   Save Changes
+                </button>
+                <button id="shiftSaveBtn" className="ml-6 mb-3 text-lg bg-forth align-middle hover:bg-fifth text-white px-1 rounded" onClick={promptDeleteEvent}>
+                  Delete
                 </button>
               </div>
             </div>
