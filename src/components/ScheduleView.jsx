@@ -1,7 +1,7 @@
-import { useRef , useState } from "react";
+import { useRef , useState, useEffect } from "react";
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import editablePlugin from '@fullcalendar/interaction'
+import editablePlugin, { Draggable } from '@fullcalendar/interaction'
 import styled from "@emotion/styled";
 import { shiftToEvent } from "../common/Shift"
 import { getShift } from "../api/getShift";
@@ -16,6 +16,10 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
   const editorDesc = useRef(null);
   const editorDate = useRef(null);
   const editorComplete = useRef(null);
+  const editorDraggable = useRef(null);
+  const DraggableInstance = useRef(null);
+  var incarnation = useRef(0); //increases by 1 each render, used for one stupid useEffect
+  var addedShiftKey = useRef(0);
   var renderedCalendar;
 
   //HACK!
@@ -113,6 +117,9 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
   //Save changes made in the UI to the edited event cache
   function saveEventChanges() {
     saveCalendarState();
+    if (!editorDate.current.value) {
+      return; //TODO FEEDBACK
+    }
     const editEvent = getEditedEventObject(activeEvent.id);
     //doesn't check for any actual changes... todo?
     editEvent.description = editorDesc.current.value;
@@ -130,7 +137,13 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
   function promptDeleteEvent() {
     if (confirm("Are you sure you want to delete this shift?")) {
       saveCalendarState();
-      calendarState.current.shiftsRemoved.push(activeEvent.id);
+      var pos = calendarState.current.shiftsEdited.findIndex(i => i.id == activeEvent.id);
+      if (pos != -1) calendarState.current.shiftsEdited.splice(pos,1);
+      pos = calendarState.current.shiftsAdded.findIndex(i => i.id == activeEvent.id);
+      if (pos != -1) 
+        calendarState.current.shiftsAdded.splice(pos,1);
+      else
+        calendarState.current.shiftsRemoved.push(activeEvent.id);
       setShowViewPanel(false);
     }
   }
@@ -143,6 +156,35 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
         day: '2-digit'
     });
   }
+  //ugh... helper
+  function getISONoTimeZone(date) {
+    return date.getFullYear() + "-" + (date.getMonth() < 9 ? "0" : "") + (date.getMonth() + 1) + "-" + (date.getDate() < 10 ? "0" : "") + date.getDate();
+  }
+  //instantiate the draggable
+  incarnation.current++;
+  useEffect(() => {
+    if (allowEdit) {
+      if (DraggableInstance.current) {
+        console.warn("Destroying a duplicate DraggableInstance!");
+        //Bugfix because react StrictMode's first render creates a bogus instance
+        //Otherwise DraggableInstance wouldn't be needed at all
+        DraggableInstance.current.destroy();
+        DraggableInstance.current = null;
+      }
+      DraggableInstance.current = new Draggable(editorDraggable.current, {
+        eventData: function () {
+          return {
+            title: "New Shift A-" + addedShiftKey.current,
+            extendedProps: {
+                eventId: "A-" + addedShiftKey.current++
+            },
+          }
+        }
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incarnation.current]); //incarnation forces this to run every render
+
   var pseudoNow = new Date();
   if (pseudoNow.getHours() > 2) pseudoNow.setHours(pseudoNow.getHours() - 2); //center on now instead of top
   // MAGIC NUMBERS: 80,80,1.3333 - font-size to pixel ratios for 3pt
@@ -207,6 +249,21 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
       const eventObj = getEditedEventObject(eventDropInfo.event.extendedProps.eventId);
       eventObj.startTime = eventDropInfo.event.start;
       eventObj.endTime = eventDropInfo.event.end;
+    }
+    options.eventReceive = function(eventReceiveInfo) {
+      var endTime = eventReceiveInfo.event.start
+      endTime.setTime(endTime.getTime() + (60*60*1000));
+      calendarState.current.shiftsAdded.push({
+        id: eventReceiveInfo.event.extendedProps.eventId,
+        name: "New Shift " + eventReceiveInfo.event.extendedProps.eventId,
+        startTime: eventReceiveInfo.event.start,
+        endTime: endTime,
+        assigner: "TODO",
+        description: "",
+        completed: false
+      })
+      eventReceiveInfo.revert();
+      calendarRef.current.getApi().refetchEvents();
     }
   }
   renderedCalendar = {current: <FullCalendar {...options}/> };
@@ -301,7 +358,7 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
                 <h2 className="text-2xl ml-5 mr-5 rounded p-0.5 bg-forth text-white font-bold">
                   <input ref={editorName} className="transparent-input bg-forth text-center border-2 border-solid rounded border-black" defaultValue={activeEvent.name}></input>
                 </h2>
-                <input type="date"  ref={editorDate} className="transparent-input mt-2 text-neutral-200" defaultValue={activeEvent.startTime.toISOString().split('T')[0]}></input>
+                <input type="date"  ref={editorDate} className="transparent-input mt-2 text-neutral-200" defaultValue={getISONoTimeZone(activeEvent.startTime)}></input>
                 <div className="mt-2 text-neutral-200">
                   {activeEvent.startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' + activeEvent.endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 </div>
@@ -328,7 +385,10 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
               {renderedCalendar.current}
             </TableStyleWrapper>
             {allowEdit && (
-              <button className="m-3 text-xl bg-forth align-middle hover:bg-fifth text-white px-1 rounded" onClick={saveEdits}>Save Changes</button>
+              <div>
+                <span ref={editorDraggable} className="m-3 text-xl bg-forth align-middle hover:bg-fifth hover:cursor-pointer text-white px-1 rounded">Add Shift (Drag)</span>
+                <button className="m-3 text-xl bg-forth align-middle hover:bg-fifth text-white px-1 rounded" onClick={saveEdits}>Save Changes</button>
+              </div>
             )}
           </div>
         </div>
