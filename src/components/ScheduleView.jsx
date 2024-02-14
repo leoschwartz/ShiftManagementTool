@@ -6,12 +6,14 @@ import styled from "@emotion/styled";
 import { shiftToEvent } from "../common/Shift"
 import { getShift } from "../api/getShift";
 import { getShifts } from "../api/getShifts";
-import {flagShiftCompleted} from "../api/flagShiftCompleted"
+import { flagShiftCompleted } from "../api/flagShiftCompleted"
+import { fetchUserProfile } from "../api/getUserProfile"
 
 const ScheduleView = ({ scheduleUser, allowEdit }) => {
   const [showViewPanel, setShowViewPanel] = useState(false);
   const [activeEvent, setActiveEvent] = useState({});
   const calendarRef = useRef({});
+  const userData = useRef({});
   const editorName = useRef(null);
   const editorDesc = useRef(null);
   const editorDate = useRef(null);
@@ -160,9 +162,19 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
   function getISONoTimeZone(date) {
     return date.getFullYear() + "-" + (date.getMonth() < 9 ? "0" : "") + (date.getMonth() + 1) + "-" + (date.getDate() < 10 ? "0" : "") + date.getDate();
   }
-  //instantiate the draggable
+  //instantiate the draggable, get user name
   incarnation.current++;
   useEffect(() => {
+    async function checkUserData() {
+      if (!userData.current || !userData.current.email) {
+        console.log("Fetching...")
+        userData.current = await fetchUserProfile();
+        if (!userData.current || !userData.current.email)
+          userData.current = {firstName:"Error",lastName:"Jones",email:"error@bugged"}
+      }
+      console.log(userData.current);
+    }
+    checkUserData();
     if (allowEdit) {
       if (DraggableInstance.current) {
         console.warn("Destroying a duplicate DraggableInstance!");
@@ -258,7 +270,7 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
         name: "New Shift " + eventReceiveInfo.event.extendedProps.eventId,
         startTime: eventReceiveInfo.event.start,
         endTime: endTime,
-        assigner: "TODO",
+        assigner: userData.current.firstName + " " + userData.current.lastName,
         description: "",
         completed: false
       })
