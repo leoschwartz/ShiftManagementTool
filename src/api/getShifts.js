@@ -1,6 +1,6 @@
 //https://fullcalendar.io/docs/events-function for info on fetchInfo object - might get removed from here in favor of handling it in common
 //eslint-disable-next-line no-unused-vars
-export const getShifts = async (user, fetchInfo)  => {
+export const getShifts = async (userToken, scheduleUser, fetchInfo)  => {
     return [
         {
             id: 0,

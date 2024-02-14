@@ -1,17 +1,22 @@
 import { useRef , useState, useEffect } from "react";
-import FullCalendar from '@fullcalendar/react'
-import timeGridPlugin from '@fullcalendar/timegrid'
-import editablePlugin, { Draggable } from '@fullcalendar/interaction'
+import { useNavigate } from "react-router-dom";
+import FullCalendar from "@fullcalendar/react";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import editablePlugin, { Draggable } from "@fullcalendar/interaction";
 import styled from "@emotion/styled";
-import { shiftToEvent } from "../common/Shift"
+import { shiftToEvent } from "../common/Shift";
 import { getShift } from "../api/getShift";
 import { getShifts } from "../api/getShifts";
-import { flagShiftCompleted } from "../api/flagShiftCompleted"
-import { fetchUserProfile } from "../api/getUserProfile"
+import { flagShiftCompleted } from "../api/flagShiftCompleted";
+import { saveScheduleEdits } from "../api/saveScheduleEdits";
+import { getCurrentUser } from "../api/getCurrentUser";
+import { userTokenAtom } from "../globalAtom";
+import { useAtom } from "jotai";
 
-const ScheduleView = ({ scheduleUser, allowEdit }) => {
+const Schedule = ({ scheduleUser, allowEdit, header }) => {
   const [showViewPanel, setShowViewPanel] = useState(false);
   const [activeEvent, setActiveEvent] = useState({});
+  const navigate = useNavigate();
   const calendarRef = useRef({});
   const userData = useRef({});
   const editorName = useRef(null);
@@ -20,6 +25,7 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
   const editorComplete = useRef(null);
   const editorDraggable = useRef(null);
   const DraggableInstance = useRef(null);
+  const [userToken] = useAtom(userTokenAtom);
   var incarnation = useRef(0); //increases by 1 each render, used for one stupid useEffect
   var addedShiftKey = useRef(0);
   var renderedCalendar;
@@ -48,7 +54,7 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
     }
     if (!isCached) {
       calendarState.current.cachedRange = {start: fetchInfo.start, end: fetchInfo.end};
-      events = await getShifts(scheduleUser, fetchInfo);
+      events = await getShifts(userToken, scheduleUser, fetchInfo);
       calendarState.current.events = events;
     } else {
       events = calendarState.current.events;
@@ -92,7 +98,7 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
     pos = calendarState.current.shiftsAdded.findIndex(i => i.id == id);
     if (pos != -1) return calendarState.current.shiftsAdded[pos];
     console.warn("Unable to find event object #" + id); //this should not happen!
-    return await getShift(id);
+    return await getShift(userToken, id);
   }
   //Return the shiftsEdited or shiftsAdded object with this id
   //If none are found, create a shiftsAdded object and return it
@@ -108,13 +114,14 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
   //Employee-view mark completion. Doesn't use the cache - just applies immediately.
   async function markShiftCompleted() {
     saveCalendarState();
-    await flagShiftCompleted(activeEvent.id);
-    calendarState.current.events[calendarState.current.events.indexOf(activeEvent)] = await getShift(activeEvent.id); //ensure sync in case api fails
+    await flagShiftCompleted(userToken, activeEvent.id);
+    calendarState.current.events[calendarState.current.events.indexOf(activeEvent)] = await getShift(userToken, activeEvent.id); //ensure sync in case api fails
   }
   //Pass pending edits to API, wipe state
   async function saveEdits() {
-    await flagShiftCompleted(scheduleUser, calendarState.current.shiftsEdited, calendarState.current.shiftsRemoved, calendarState.current.shiftsRemoved);
-    window.location.reload(); //nuclear option
+    await saveScheduleEdits(userToken, scheduleUser, calendarState.current.shiftsEdited, calendarState.current.shiftsRemoved, calendarState.current.shiftsRemoved);
+    //window.location.reload(); //nuclear option
+    navigate(-1);
   }
   //Save changes made in the UI to the edited event cache
   function saveEventChanges() {
@@ -167,12 +174,10 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
   useEffect(() => {
     async function checkUserData() {
       if (!userData.current || !userData.current.email) {
-        console.log("Fetching...")
-        userData.current = await fetchUserProfile();
+        userData.current = await getCurrentUser(userToken);
         if (!userData.current || !userData.current.email)
           userData.current = {firstName:"Error",lastName:"Jones",email:"error@bugged"}
       }
-      console.log(userData.current);
     }
     checkUserData();
     if (allowEdit) {
@@ -393,6 +398,8 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
 
         <div className="inline-block h-full m-auto w-full align-top text-center">
           <div className="m-3 h-full border-2 border-solid rounded border-black text-neutral-400 bg-secondary bg-gradient-to-tr from-secondary to-neutral-600">
+          {header && (<h3 className="text-2xl w-full rounded p-0.5 bg-forth text-white font-bold">{header}</h3>)}
+          <hr className="border-1 border-black"></hr>
             <TableStyleWrapper>
               {renderedCalendar.current}
             </TableStyleWrapper>
@@ -408,4 +415,4 @@ const ScheduleView = ({ scheduleUser, allowEdit }) => {
     </section>
   )
 }
-export default ScheduleView;
+export default Schedule;

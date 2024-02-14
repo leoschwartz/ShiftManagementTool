@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router";
 import { authenticateUser } from "../api/authenticateUser";
 import { useAtom } from "jotai";
-import { userTokenAtom, userAccessLevelAtom } from "../globalAtom";
+import { userTokenAtom, userAccessLevelAtom, userIdAtom } from "../globalAtom";
 
 function Login() {
   const navigate = useNavigate();
@@ -10,6 +10,7 @@ function Login() {
   const [password, setPassword] = React.useState("");
   const [, setUserToken] = useAtom(userTokenAtom);
   const [, setUserAccessLevel] = useAtom(userAccessLevelAtom);
+  const [, setUserId] = useAtom(userIdAtom);
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = await authenticateUser(email, password);
@@ -18,6 +19,7 @@ function Login() {
       const accessLevel = data.accessLevel;
       setUserToken(token);
       setUserAccessLevel(accessLevel);
+      setUserId(data.userId);
       navigate("/schedule");
     } else {
       alert("Wrong username or password");

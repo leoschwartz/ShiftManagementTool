@@ -1,5 +1,5 @@
 import axios from "axios";
-export const addNewUser = async (email, password, ...userInfo) => {
+export const addNewUser = async (userToken, email, password, ...userInfo) => {
   const apiUrl = import.meta.env.VITE_API_URL + "/user/register";
   if (!apiUrl) {
     throw new Error("API_URL is not defined");
@@ -9,6 +9,9 @@ export const addNewUser = async (email, password, ...userInfo) => {
       email,
       password,
       ...userInfo,
+      headers: {
+          Authorization: "Bearer " + userToken,
+      },
     });
     return res.data.token;
   } catch (error) {

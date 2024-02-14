@@ -30,9 +30,11 @@ function Navbar() {
         </Link>
         {isLoggedIn && (
           <div className="hidden md:flex md:order-2 space-x-4 md:space-x-8 rtl:space-x-reverse items-center">
+          {accessLevel == 0 ? (
             <Link to="/schedule" className="text-white hover:text-secondary">
               Schedule
             </Link>
+          ) : null}
             {accessLevel == 1 ? (
               <Link
                 to="/employeeList"
