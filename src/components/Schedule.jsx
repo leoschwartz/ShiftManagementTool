@@ -52,7 +52,9 @@ const Schedule = ({ scheduleUser, allowEdit, header }) => {
       isCached = (fetchInfo.start.toDateString() == calendarState.current.cachedRange.start.toDateString() 
       || fetchInfo.end.toDateString() == calendarState.current.cachedRange.end.toDateString());
     }
-    if (!isCached) {
+    if (!isCached || calendarState.current.events.length == 0) { 
+      //hack fix, something is wrong here ^
+      //the first strictMode render sets isCached to true but loses the events?
       calendarState.current.cachedRange = {start: fetchInfo.start, end: fetchInfo.end};
       events = await getShifts(userToken, scheduleUser, fetchInfo);
       calendarState.current.events = events;
@@ -119,7 +121,7 @@ const Schedule = ({ scheduleUser, allowEdit, header }) => {
   }
   //Pass pending edits to API, wipe state
   async function saveEdits() {
-    await saveScheduleEdits(userToken, scheduleUser, calendarState.current.shiftsEdited, calendarState.current.shiftsRemoved, calendarState.current.shiftsRemoved);
+    await saveScheduleEdits(userToken, scheduleUser, calendarState.current.shiftsEdited, calendarState.current.shiftsRemoved, calendarState.current.shiftsAdded);
     //window.location.reload(); //nuclear option
     navigate(-1);
   }
@@ -131,7 +133,7 @@ const Schedule = ({ scheduleUser, allowEdit, header }) => {
     }
     const editEvent = getEditedEventObject(activeEvent.id);
     //doesn't check for any actual changes... todo?
-    editEvent.description = editorDesc.current.value;
+    editEvent.desc = editorDesc.current.value;
     editEvent.completed = editorComplete.current.checked;
     editEvent.name = editorName.current.value;
     var stringTok = editorDate.current.value.split("-");
@@ -276,7 +278,7 @@ const Schedule = ({ scheduleUser, allowEdit, header }) => {
         startTime: eventReceiveInfo.event.start,
         endTime: endTime,
         assigner: userData.current.firstName + " " + userData.current.lastName,
-        description: "",
+        desc: "",
         completed: false
       })
       eventReceiveInfo.revert();
@@ -346,7 +348,7 @@ const Schedule = ({ scheduleUser, allowEdit, header }) => {
                 <div className="mt-2">Manager/Supervisor: <span className="text-neutral-200">{activeEvent.assigner}</span></div>
                 <div className="mt-2">Description:</div>
                 <div className="min-h-1/2 h-min min-w-80 ml-5 mr-5 mt-1 h-full border-2 border-solid rounded border-neutral-800 bg-neutral-700">
-                    <div className="text-neutral-200">{activeEvent.description}</div>
+                    <div className="text-neutral-200">{activeEvent.desc}</div>
                 </div>
                 <div className="m-2">Completed:
                   <input type="checkbox" className="ml-2 mr-3" disabled defaultChecked={activeEvent.completed}></input>
@@ -381,7 +383,7 @@ const Schedule = ({ scheduleUser, allowEdit, header }) => {
                 </div>
                 <div className="mt-2">Manager/Supervisor: <span className="text-neutral-200">{activeEvent.assigner}</span></div>
                 <div className="mt-2">Description:</div>
-                <textarea ref={editorDesc} className="min-w-80 min-h-1/2 h-min ml-5 mr-5 mt-1 h-full border-2 border-solid rounded border-neutral-800 bg-neutral-700" defaultValue={activeEvent.description}></textarea>
+                <textarea ref={editorDesc} className="min-w-80 min-h-1/2 h-min ml-5 mr-5 mt-1 h-full border-2 border-solid rounded border-neutral-800 bg-neutral-700" defaultValue={activeEvent.desc}></textarea>
                 <div className="m-2">Completed:
                   <input ref={editorComplete} type="checkbox" className="transparent-input ml-2 mr-3" defaultChecked={activeEvent.completed}></input>
                 </div> 

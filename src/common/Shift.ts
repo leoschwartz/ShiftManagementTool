@@ -3,13 +3,13 @@ import {getShift} from "../api/getShift"
 //The primary reason behind this intermediary object is to use it when editing gets implemented. 
 //This will be used to hold staged changes clientside.
 export class Shift {
-    constructor(id, name, startTime, endTime, assigner, description, completed) {
+    constructor(id, name, startTime, endTime, assigner, desc, completed) {
         this.id = id;
         this.name = name;
         this.startTime = startTime;
         this.endTime = endTime;
         this.assigner = assigner;
-        this.description = description;
+        this.desc = desc;
         this.completed = completed;
     }
     id: number;
@@ -17,7 +17,7 @@ export class Shift {
     startTime: Date;
     endTime: Date;
     assigner: String;
-    description: String;
+    desc: String;
     completed: boolean; 
 }
 //Convert shift object to FullCalendar event
