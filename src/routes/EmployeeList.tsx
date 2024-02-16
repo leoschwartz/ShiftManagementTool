@@ -1,5 +1,6 @@
 import { useAtom } from "jotai";
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { userTokenAtom } from "../globalAtom";
 
 const EmployeeList = () => {
@@ -114,9 +115,12 @@ const EmployeeList = () => {
             <ul className="text-left space-y-2">
               {/* Render an <li> for each employee in the list */}
               {employeeList.map((employee, index) => (
-                <li key={index} className="flex">
+                <li key={index} className="flex relative">
                   {/* <span className="ml-2">{employee.firstName + " " + employee.lastName}</span> */}
                   <span className="ml-2">Employee#{index + 1}</span>
+                  <Link to={"/scheduleEditor/" + employee} className="absolute right-0 bg-forth align-middle hover:bg-fifth text-white px-1 rounded">
+                    Edit Schedule
+                  </Link>
                 </li>
               ))}
             </ul>

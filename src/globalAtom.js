@@ -1,6 +1,7 @@
 import { atom } from "jotai";
 
 export const userTokenAtom = atom(null);
+export const userIdAtom = atom(null);
 
 export const userAccessLevelAtom = atom(-1);
 

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import Theme1 from "../components/theme/Theme1";
 import { addNewUser } from "../api/addNewUser";
+import { userTokenAtom } from "../globalAtom";
+import { useAtom } from "jotai";
 
 const AddNewUserPage = () => {
   const [firstName, setFirstName] = useState("");
@@ -10,6 +12,7 @@ const AddNewUserPage = () => {
   const [accessLevel, setAccessLevel] = useState("1");
   const [error, setError] = useState("");
   const [notification, setNotification] = useState("");
+  const [userToken] = useAtom(userTokenAtom);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,6 +25,7 @@ const AddNewUserPage = () => {
 
     // Handle form submission logic here
     const res = await addNewUser(
+      userToken,
       email,
       password,
       accessLevel,

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "devlocal": "cross-env VITE_API_URL=http://localhost:5000 vite",
     "test": "jest",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
@@ -31,6 +32,7 @@
     "@vitejs/plugin-react": "^4.2.1",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "autoprefixer": "^10.4.16",
+    "cross-env": "^7.0.3",
     "cypress": "^13.6.2",
     "eslint": "^8.55.0",
     "eslint-plugin-react": "^7.33.2",
