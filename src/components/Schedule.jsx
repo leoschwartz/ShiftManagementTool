@@ -54,7 +54,7 @@ const Schedule = ({ scheduleUser, allowEdit, header }) => {
     }
     if (!isCached || calendarState.current.events.length == 0) { 
       //hack fix, something is wrong here ^
-      //the first strictMode render sets isCached to true but loses the events?
+      //the first strictMode render sets isCached to true but loses the events? TODO
       calendarState.current.cachedRange = {start: fetchInfo.start, end: fetchInfo.end};
       events = await getShifts(userToken, scheduleUser, fetchInfo);
       calendarState.current.events = events;
@@ -237,7 +237,7 @@ const Schedule = ({ scheduleUser, allowEdit, header }) => {
     //this should maybe be configurable? something for the future
     //slotMinTime: { "05:00:00"},
     //slotMaxTime: { "20:00:00"},
-    weekends: false,
+    weekends: true,
     //hiddenDays: //worth considering if we could hide empty days...
     dayHeaderFormat: { weekday: 'short' },
     businessHours : true, //good for prototype, unsure if permanent
