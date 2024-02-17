@@ -1,6 +1,7 @@
 import "./App.css";
 import ScheduleView from "./routes/ScheduleView";
 import ScheduleEditor from "./routes/ScheduleEditor";
+import ScheduleEditorUnassigned from "./routes/scheduleEditorUnassigned";
 import Navbar from "./components/Navbar";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./routes/Login";
@@ -24,6 +25,7 @@ function App() {
             </Route>
             <Route element={<AuthorizationCheck accessLevel={import.meta.env.VITE_MANAGER_ACCESS}/> }>
               <Route path="/scheduleEditor/:employee" element={<ScheduleEditor />}></Route>
+              <Route path="/scheduleEditorUnassigned" element={<ScheduleEditorUnassigned />}></Route>
             </Route>
             <Route element={<AuthorizationCheck accessLevel={import.meta.env.VITE_EMPLOYEE_ACCESS}/> }>
               <Route path="/schedule" element={<ScheduleView />}></Route>
