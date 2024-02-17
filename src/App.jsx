@@ -1,6 +1,7 @@
 import "./App.css";
 import SchedulePage from "./routes/SchedulePage";
 import Navbar from "./components/Navbar";
+import NotificationIcon from "./components/NotificationIcon";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./routes/Login";
 import Profile from "./routes/Profile";
@@ -15,6 +16,7 @@ function App() {
     <>
       <Router>
         <Navbar />
+        <NotificationIcon />
         <Routes>
           <Route path="/login" element={<Login />}></Route>
           <Route element={<ProtectedRoute />}>
