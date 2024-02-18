@@ -30,24 +30,23 @@ function Navbar() {
         </Link>
         {isLoggedIn && (
           <div className="hidden md:flex md:order-2 space-x-4 md:space-x-8 rtl:space-x-reverse items-center">
-          {accessLevel == 0 ? (
-            <Link to="/schedule" className="text-white hover:text-secondary">
-              Schedule
-            </Link>
-          ) : null}
+            {accessLevel == 0 ? (
+              <Link to="/schedule" className="text-white hover:text-secondary">
+                Schedule
+              </Link>
+            ) : null}
             {accessLevel == 1 ? (
-              <Link
-                to="/employeeList"
-                className="text-white hover:text-secondary"
-              >
+                <Link to="/scheduleEditorUnassigned" className="text-white hover:text-secondary">
+                  Unassigned Shifts
+                </Link>
+            ) : null}
+            {accessLevel == 1 ? (
+              <Link to="/employeeList" className="text-white hover:text-secondary">
                 Employee List
               </Link>
             ) : null}
             {accessLevel == 2 && (
-              <Link
-                to="/addNewUser"
-                className="text-white hover:text-secondary"
-              >
+              <Link to="/addNewUser" className="text-white hover:text-secondary">
                 Add New User
               </Link>
             )}

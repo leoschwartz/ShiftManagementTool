@@ -130,9 +130,6 @@ const EmployeeList = () => {
             </ul>
           </div>
         </div>
-        <Link to={"/scheduleEditorUnassigned"} className="mt-4 bg-forth align-middle hover:bg-fifth text-white px-1 rounded">
-          Edit Unassigned Shifts
-        </Link>
         {/* Add Employee Popup */}
         {showAddEmployeePopup && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-8">
