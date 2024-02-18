@@ -1,7 +1,7 @@
 import "./App.css";
 import ScheduleView from "./routes/ScheduleView";
 import ScheduleEditor from "./routes/ScheduleEditor";
-import ScheduleEditorUnassigned from "./routes/scheduleEditorUnassigned";
+import ScheduleEditorUnassigned from "./routes/ScheduleEditorUnassigned";
 import Navbar from "./components/Navbar";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./routes/Login";
