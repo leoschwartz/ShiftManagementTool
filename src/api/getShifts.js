@@ -1,7 +1,10 @@
 //https://fullcalendar.io/docs/events-function for info on fetchInfo object
 import axios from "axios";
+//interprets null scheduleUser as unassigned
 export const getShifts = async (userToken, scheduleUser, fetchInfo)  => {
-    const apiUrl = import.meta.env.VITE_API_URL + "/shifts/getRange";
+    var apiUrl = import.meta.env.VITE_API_URL + "/shifts/getRange";
+    if (!scheduleUser)
+        apiUrl = import.meta.env.VITE_API_URL + "/shifts/getUnassignedShifts";
     if (!apiUrl) {
         throw new Error("API_URL is not defined");
     }

@@ -161,7 +161,10 @@ const Schedule = ({ scheduleUser, allowEdit, header }) => {
   //Save the calendar scroll position and range for the re-render
   function saveCalendarState() {
     calendarState.current.scroll= document.querySelector(".fc-scroller-liquid-absolute").scrollTop;
-    calendarState.current.visibleRange = calendarRef.current.getApi().currentData.dateProfile.activeRange.start.toLocaleDateString([], {
+    const range = calendarRef.current.getApi().currentData.dateProfile.activeRange.start;
+    //off-by-one bug in FullCalendar dirty fix
+    const fixedRange = new Date(range.getFullYear(),range.getMonth(),range.getDate()+1);
+    calendarState.current.visibleRange = fixedRange.toLocaleDateString([], {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit'
@@ -184,7 +187,7 @@ const Schedule = ({ scheduleUser, allowEdit, header }) => {
     checkUserData();
     if (allowEdit) {
       if (DraggableInstance.current) {
-        console.warn("Destroying a duplicate DraggableInstance!");
+        //console.warn("Destroying a duplicate DraggableInstance!");
         //Bugfix because react StrictMode's first render creates a bogus instance
         //Otherwise DraggableInstance wouldn't be needed at all
         DraggableInstance.current.destroy();

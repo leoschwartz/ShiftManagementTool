@@ -86,8 +86,12 @@ const EmployeeList = () => {
 
         if (response.ok) {
           const userData = await response.json();
-
-          setEmployeeList(userData.employeeList);
+          if (userData.employeeList) {
+            setEmployeeList(userData.employeeList);
+          } else {
+            console.warn("employeeList is null!");
+            setEmployeeList([]);
+          }
         } else {
           console.error("Failed to fetch employee list");
         }
@@ -126,7 +130,9 @@ const EmployeeList = () => {
             </ul>
           </div>
         </div>
-
+        <Link to={"/scheduleEditorUnassigned"} className="mt-4 bg-forth align-middle hover:bg-fifth text-white px-1 rounded">
+          Edit Unassigned Shifts
+        </Link>
         {/* Add Employee Popup */}
         {showAddEmployeePopup && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-8">
