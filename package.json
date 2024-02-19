@@ -23,7 +23,9 @@
     "jotai": "^2.6.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.21.3"
+    "react-modal": "^3.16.1",
+    "react-router-dom": "^6.21.3",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@swc-jotai/react-refresh": "^0.1.0",

@@ -19,18 +19,40 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />}></Route>
           <Route element={<ProtectedRoute />}>
-            <Route element={<AuthorizationCheck accessLevel={import.meta.env.VITE_ADMIN_ACCESS}/> }>
+            <Route
+              element={
+                <AuthorizationCheck
+                  accessLevel={import.meta.env.VITE_ADMIN_ACCESS}
+                />
+              }
+            >
               <Route path="/addNewUser" element={<AddNewUserPage />}></Route>
             </Route>
-            <Route element={<AuthorizationCheck accessLevel={import.meta.env.VITE_MANAGER_ACCESS}/> }>
-              <Route path="/scheduleEditor/:employee" element={<ScheduleEditor />}></Route>
+            <Route
+              element={
+                <AuthorizationCheck
+                  accessLevel={import.meta.env.VITE_MANAGER_ACCESS}
+                />
+              }
+            >
+              <Route
+                path="/scheduleEditor/:employee"
+                element={<ScheduleEditor />}
+              ></Route>
             </Route>
-            <Route element={<AuthorizationCheck accessLevel={import.meta.env.VITE_EMPLOYEE_ACCESS}/> }>
+            <Route
+              element={
+                <AuthorizationCheck
+                  accessLevel={import.meta.env.VITE_EMPLOYEE_ACCESS}
+                />
+              }
+            >
               <Route path="/schedule" element={<ScheduleView />}></Route>
             </Route>
             <Route path="/profile" element={<Profile />}></Route>
             <Route path="/unauthorize" element={<Unauthorize />} />
           </Route>
+          <Route path="*" element={<Login />}></Route>
           <Route path="*" element={<Error404 />}></Route>
           <Route path="/employeeList" element={<EmployeeList />} />
         </Routes>
