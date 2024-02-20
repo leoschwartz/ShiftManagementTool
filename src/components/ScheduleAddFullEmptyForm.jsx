@@ -15,10 +15,10 @@ function ScheduleAddFullEmptyForm(props) {
         ) : (
           <>
             <p className="mb-2">
-              Start Time: {dateToHourMinute(props.selectedEvent?.start)}
+              Start Time: {dateToHourMinute(props.selectedEvent?.startTime)}
             </p>
             <p className="mb-2">
-              End Time: {dateToHourMinute(props.selectedEvent?.end)}
+              End Time: {dateToHourMinute(props.selectedEvent?.endTime)}
             </p>
           </>
         )}

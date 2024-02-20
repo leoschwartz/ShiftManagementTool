@@ -23,13 +23,13 @@ export default function ShiftDetail(props) {
             <div className="flex justify-between mb-4">
               <h2 className="text-xl font-bold text-forth">Start Time:</h2>
               <p className="text-xl ">
-                {shift?.start && dateToHourMinute(shift.start)}
+                {shift?.startTime && dateToHourMinute(shift.startTime)}
               </p>
             </div>
             <div className="flex justify-between mb-4">
               <h2 className="text-xl font-bold text-forth">End Time:</h2>
               <p className="text-xl ">
-                {shift?.end && dateToHourMinute(shift.end)}
+                {shift?.endTime && dateToHourMinute(shift.endTime)}
               </p>
             </div>
           </>

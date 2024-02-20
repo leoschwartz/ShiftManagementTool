@@ -66,6 +66,7 @@ function TestSchedule({ employeeId }) {
           endDate
         );
         schedule.current = res;
+
         setCurrentEvents(shifts);
         setIsScheduleExist(true);
       }
@@ -82,11 +83,12 @@ function TestSchedule({ employeeId }) {
       return {
         id: event.id,
         title: event.name,
-        start: event.start,
-        end: event.end,
+        start: event.startTime,
+        end: event.endTime,
         allDay: event.allDay,
       };
     });
+    console.log(newDataSource);
     setDataSource(newDataSource);
   }, [currentEvents]);
 
@@ -113,8 +115,8 @@ function TestSchedule({ employeeId }) {
   const handleDateSelect = (selectInfo) => {
     setSelectedEvent({
       id: uuid(),
-      start: selectInfo.startStr,
-      end: selectInfo.endStr,
+      startTime: selectInfo.startStr,
+      endTime: selectInfo.endStr,
       allDay: selectInfo.allDay,
     });
     setIsFormModalOpen(true);
@@ -139,8 +141,8 @@ function TestSchedule({ employeeId }) {
         desc: desc,
         location: location,
         id: ev.id,
-        start: ev.start,
-        end: ev.end,
+        startTime: ev.startTime,
+        endTime: ev.endTime,
         allDay: ev.allDay,
       };
     });
@@ -179,13 +181,17 @@ function TestSchedule({ employeeId }) {
       res = await createSchedule(userToken, {
         shiftIdList: currentEvents.map((event) => event.id),
         startTime: getSundayOfWeek(),
-        employeeId: schedule.current.employeeId,
+        employeeId: employeeId,
       });
       const scheduleId = res.id;
+      schedule.current = res.schedule;
+      setIsScheduleExist(true);
       const shifts = currentEvents.map((event) => {
         return {
           ...event,
           scheduleId: scheduleId,
+          startTime: event.startTime,
+          endTime: event.endTime,
         };
       });
       for (let i = 0; i < shifts.length; i++) {
@@ -193,16 +199,18 @@ function TestSchedule({ employeeId }) {
       }
     }
     if (res) {
-      console.log(res);
       setIsSaved(true);
     }
-    setIsSaved(true);
   };
   const resetSchedule = async () => {
-    const startDate = schedule.current.startTime;
-    const endDate = schedule.current.endTime;
-    const shifts = await getShifts(userToken, employeeId, startDate, endDate);
-    setCurrentEvents(shifts);
+    if (isScheduleExist) {
+      const startDate = schedule.current.startTime;
+      const endDate = schedule.current.endTime;
+      const shifts = await getShifts(userToken, employeeId, startDate, endDate);
+      setCurrentEvents(shifts);
+    } else {
+      setCurrentEvents([]);
+    }
   };
 
   return (
@@ -246,8 +254,9 @@ function TestSchedule({ employeeId }) {
         )}
         <div id="buttonSet" className="flex items-center justify-center my-5">
           <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2 disabled:opacity-50"
             onClick={saveNewSchedule}
+            disabled={currentEvents.length === 0 || isSaved}
           >
             Save
           </button>
