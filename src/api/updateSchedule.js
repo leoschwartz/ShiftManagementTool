@@ -11,22 +11,21 @@ import axios from "axios";
 // @returns {object} updated schedule
 
 export const updateSchedule = async (userToken, employeeId, updateData) => {
-  const apiUrl = import.meta.env.VITE_API_URL + "/schedule/updateSchedule";
+  const apiUrl = import.meta.env.VITE_API_URL + "/schedule/update";
+  console.log(updateData);
   if (!apiUrl) {
     throw new Error("API_URL is not defined");
   }
   try {
-    const res = await axios({
-      method: "put",
-      url: apiUrl,
-      headers: {
-        Authorization: "Bearer " + userToken,
-      },
-      data: {
-        employeeId: employeeId,
-        updateData: updateData,
-      },
-    });
+    const res = await axios.put(
+      apiUrl,
+      { id: employeeId, updateData: updateData },
+      {
+        headers: {
+          Authorization: "Bearer " + userToken,
+        },
+      }
+    );
     return res.data;
   } catch (error) {
     console.log(error);

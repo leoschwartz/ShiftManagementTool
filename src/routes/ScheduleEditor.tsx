@@ -7,26 +7,10 @@ import { userIdAtom } from "../globalAtom";
 import TestSchedule from "../components/TestSchedule";
 
 const ScheduleView = () => {
-  const [userId] = useAtom(userIdAtom);
   let { employee } = useParams();
-  //getUser(userId, employee);
-  //TODO - Replace "Employee" with name! api/getUser
-  const headerName = "Employee";
   return (
-    // <section className="flex justify-center items-center flex-col" id="home">
-    //   <div className="fixed inset-0 h-full bg-gradient-to-tr from-third to-fifth -z-10 opacity-50"></div>
-    //   <div className="max-w-xl w-full">
-    //     <Schedule
-    //       scheduleUser={employee}
-    //       allowEdit={true}
-    //       header={"Schedule for " + headerName}
-    //     />
-    //   </div>
-
-    // </section>
-    <div>
-      <h1>This is a new testing schedule</h1>
-      <TestSchedule employeeId={employee} />
+    <div className="min-h-screen">
+      <TestSchedule employeeId={employee ?? ""} />
     </div>
   );
 };

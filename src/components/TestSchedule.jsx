@@ -8,7 +8,7 @@ import Theme1 from "./theme/Theme1";
 import ScheduleAddFullEmptyForm from "./ScheduleAddFullEmptyForm";
 import { getSchedule } from "../api/getSchedule";
 import { useAtom } from "jotai";
-import { userTokenAtom } from "../globalAtom";
+import { userTokenAtom, userAccessLevelAtom } from "../globalAtom";
 import { getShifts } from "../api/getShifts";
 import { createSchedule } from "../api/createSchedule";
 import PropTypes from "prop-types";
@@ -17,7 +17,7 @@ import { updateSchedule } from "../api/updateSchedule";
 import { getSundayOfWeek } from "../utils/getSundayOfWeek";
 import { getCurrentUser } from "../api/getCurrentUser";
 import { deleteShift } from "../api/deleteShift";
-import SuccessfulNotification from "./utils/SuccessfulNotification";
+import Notification from "./utils/Notification";
 import ShiftDetail from "./ShiftDetail";
 
 function renderEventContent(eventInfo) {
@@ -36,6 +36,7 @@ function renderEventContent(eventInfo) {
 function TestSchedule({ employeeId }) {
   // store a list of events that will be saved into the database
   const [userToken] = useAtom(userTokenAtom);
+  const [userAccessLevel] = useAtom(userAccessLevelAtom);
   const [currentEvents, setCurrentEvents] = useState([]);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -46,9 +47,11 @@ function TestSchedule({ employeeId }) {
   const [isSaved, setIsSaved] = useState(false);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
   const [deletedShiftIds, setDeletedShiftIds] = useState([]);
+  const [error, setError] = useState("");
 
   let schedule = useRef(null);
   let currentUser = useRef(null);
+  let calendarRef = useRef(null);
   //   Fetch a list of shifts from the database
   useEffect(() => {
     const currentDate = new Date();
@@ -76,8 +79,19 @@ function TestSchedule({ employeeId }) {
     const fetchUser = async () => {
       currentUser.current = await getCurrentUser(userToken);
     };
-    fetchDate();
-    fetchUser();
+    try {
+      fetchDate();
+      fetchUser();
+    } catch (error) {
+      setError(error.message);
+    }
+
+    if (calendarRef.current) {
+      console.log("calendarRef.current", calendarRef.current);
+      const calendarApi = calendarRef.current.getApi(); // Get the FullCalendar API
+      calendarApi.removeAllEvents(); // Remove all existing events
+      calendarApi.addEventSource(dataSource); // Add new events to the calendar
+    }
   }, []);
   //  Convert the currentEvents to a dataSource that is compatible with the FullCalendar to allow rendering
   useEffect(() => {
@@ -168,71 +182,95 @@ function TestSchedule({ employeeId }) {
 
   const saveNewSchedule = async () => {
     let res = null;
-    // if the schedule already exists, update it
-    if (isScheduleExist) {
-      // Delete the shifts that are removed and already in the database
-      const deletedShifts = deletedShiftIds.filter((id) => {
-        return schedule.current.shiftIdList.includes(id);
-      });
-      for (let i = 0; i < deletedShifts.length; i++) {
-        await deleteShift(userToken, deletedShifts[i]);
-      }
-      setDeletedShiftIds([]);
-      // Get a list of new shifts
-      const newShifts = currentEvents.filter((event) => {
-        return !schedule.current.shiftIdList.includes(event.id);
-      });
-      // Create a new instance for each shift
-      for (let i = 0; i < newShifts.length; i++) {
-        await createShift(userToken, newShifts[i]);
-      }
+    try {
+      // if the schedule already exists, update it
+      if (isScheduleExist) {
+        // Delete the shifts that are removed and already in the database
+        const deletedShifts = deletedShiftIds.filter((id) => {
+          return schedule.current.shiftIdList.includes(id);
+        });
+        if (deletedShifts.length > 0) {
+          for (let i = 0; i < deletedShifts.length; i++) {
+            await deleteShift(userToken, deletedShifts[i]);
+          }
+          // update the schedule
+          if (deletedShifts.length > 1) {
+            res = await updateSchedule(userToken, schedule.current.id, {
+              removeMultipleShifts: deletedShifts,
+            });
+          } else if (deletedShifts.length === 1) {
+            res = await updateSchedule(userToken, schedule.current.id, {
+              removeShift: deletedShifts[0],
+            });
+          }
+          setDeletedShiftIds([]);
+        }
 
-      // update the schedule
-      if (newShifts.length > 1) {
-        res = await updateSchedule(userToken, employeeId, {
-          addMultipleShifts: newShifts.map((shift) => shift.id),
+        // Get a list of new shifts
+        const newShifts = currentEvents.filter((event) => {
+          return !schedule.current.shiftIdList.includes(event.id);
         });
-      } else if (newShifts.length === 1) {
-        res = await updateSchedule(userToken, employeeId, {
-          addShift: newShifts[0].id,
+        // Create a new instance for each shift
+        for (let i = 0; i < newShifts.length; i++) {
+          await createShift(userToken, newShifts[i]);
+        }
+
+        // update the schedule
+        if (newShifts.length > 1) {
+          res = await updateSchedule(userToken, schedule.current.id, {
+            addMultipleShifts: newShifts.map((shift) => shift.id),
+          });
+        } else if (newShifts.length === 1) {
+          res = await updateSchedule(userToken, schedule.current.id, {
+            addShift: newShifts[0].id,
+          });
+        }
+      }
+      // or create a new one
+      else {
+        res = await createSchedule(userToken, {
+          shiftIdList: currentEvents.map((event) => event.id),
+          startTime: getSundayOfWeek(),
+          employeeId: employeeId,
         });
+        const scheduleId = res.id;
+        schedule.current = res.schedule;
+        setIsScheduleExist(true);
+        const shifts = currentEvents.map((event) => {
+          return {
+            ...event,
+            scheduleId: scheduleId,
+            startTime: event.startTime,
+            endTime: event.endTime,
+          };
+        });
+        for (let i = 0; i < shifts.length; i++) {
+          await createShift(userToken, shifts[i]);
+        }
       }
-    }
-    // or create a new one
-    else {
-      res = await createSchedule(userToken, {
-        shiftIdList: currentEvents.map((event) => event.id),
-        startTime: getSundayOfWeek(),
-        employeeId: employeeId,
-      });
-      const scheduleId = res.id;
-      schedule.current = res.schedule;
-      setIsScheduleExist(true);
-      const shifts = currentEvents.map((event) => {
-        return {
-          ...event,
-          scheduleId: scheduleId,
-          startTime: event.startTime,
-          endTime: event.endTime,
-        };
-      });
-      for (let i = 0; i < shifts.length; i++) {
-        await createShift(userToken, shifts[i]);
+      if (res) {
+        setIsSaved(true);
+        schedule.current = res;
       }
-    }
-    if (res) {
-      setIsSaved(true);
-      schedule.current = res;
+    } catch (error) {
+      setError(error.message);
     }
   };
+
   const resetSchedule = async () => {
-    if (isScheduleExist) {
-      const startDate = schedule.current.startTime;
-      const endDate = schedule.current.endTime;
-      const shifts = await getShifts(userToken, employeeId, startDate, endDate);
-      setCurrentEvents(shifts);
-    } else {
+    try {
+      if (isScheduleExist) {
+        const deletedShifts = schedule.current.shiftIdList;
+        for (let i = 0; i < deletedShifts.length; i++) {
+          await deleteShift(userToken, deletedShifts[i]);
+        }
+        setDeletedShiftIds([]);
+        schedule.current = null;
+        setIsScheduleExist(false);
+      }
       setCurrentEvents([]);
+    } catch (error) {
+      setError(error.message);
     }
   };
 
@@ -251,7 +289,7 @@ function TestSchedule({ employeeId }) {
         onDelete={(id) => addRemovedShiftToList(id)}
       />
       <Theme1 />
-      <div>
+      <div className="h-full">
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           headerToolbar={{
@@ -260,33 +298,50 @@ function TestSchedule({ employeeId }) {
             right: "timeGridWeek,timeGridDay",
           }}
           initialView="dayGridWeek"
-          editable={true}
-          selectable={true}
+          editable={userAccessLevel == 1 ? true : false}
+          selectable={userAccessLevel == 1 ? true : false}
           selectMirror={true}
           dayMaxEvents={true}
           events={dataSource}
           select={handleDateSelect}
           eventContent={renderEventContent} // custom render function
           eventClick={handleEventClick}
+          ref={calendarRef}
         />
         {isSaved && (
-          <SuccessfulNotification
+          <Notification
             message="Your schedule has been saved successfully."
             showCloseButton={true}
             onClose={() => setIsSaved(false)}
+            type="success"
           />
         )}
-        <div id="buttonSet" className="flex items-center justify-center my-5">
+
+        {error !== "" && (
+          <Notification
+            message={error}
+            showCloseButton={true}
+            onClose={() => setError("")}
+            type="error"
+          />
+        )}
+        <div
+          id="buttonSet"
+          className={`flex items-center justify-center my-5 ${
+            userAccessLevel == 1 ? "" : "hidden"
+          }`}
+        >
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2 disabled:opacity-50"
             onClick={saveNewSchedule}
-            disabled={
-              deletedShiftIds.length === 0 ||
-              isSaved ||
-              (schedule.current != null &&
-                schedule.current.shiftIdList.length === currentEvents.length &&
-                deletedShiftIds.length === 0)
-            }
+            // Currently, there are too many conditions to enable/disable the save button
+            // disabled={
+            //   deletedShiftIds.length === 0 ||
+            //   isSaved ||
+            //   (schedule.current != null &&
+            //     schedule.current.shiftIdList.length === currentEvents.length &&
+            //     deletedShiftIds.length === 0)
+            // }
           >
             Save
           </button>
