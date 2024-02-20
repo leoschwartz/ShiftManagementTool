@@ -1,5 +1,6 @@
 import Modal from "./utils/Modal";
 import PropTypes from "prop-types";
+import { dateToHourMinute } from "../utils/dateToHourMinute";
 function ScheduleAddFullEmptyForm(props) {
   return (
     <Modal
@@ -9,8 +10,18 @@ function ScheduleAddFullEmptyForm(props) {
     >
       <div id="info" className="mb-4">
         <p className="mb-2">Event ID: {props.selectedEvent?.id}</p>
-        <p className="mb-2">Start Time: {props.selectedEvent?.start}</p>
-        <p className="mb-2">End Time: {props.selectedEvent?.end}</p>
+        {props.selectedEvent?.allDay ? (
+          <p className="mb-2">All day: {props.selectedEvent?.allDay}</p>
+        ) : (
+          <>
+            <p className="mb-2">
+              Start Time: {dateToHourMinute(props.selectedEvent?.start)}
+            </p>
+            <p className="mb-2">
+              End Time: {dateToHourMinute(props.selectedEvent?.end)}
+            </p>
+          </>
+        )}
       </div>
       <form className="max-w-sm mx-auto" onSubmit={props.onSubmit}>
         <div className="mb-4">

@@ -9,23 +9,25 @@ import ScheduleAddFullEmptyForm from "./ScheduleAddFullEmptyForm";
 import { getSchedule } from "../api/getSchedule";
 import { useAtom } from "jotai";
 import { userTokenAtom } from "../globalAtom";
-import { ShiftSchedule } from "../models/shiftSchedule";
 import { getShifts } from "../api/getShifts";
 import { createSchedule } from "../api/createSchedule";
 import PropTypes from "prop-types";
 import { createShift } from "../api/createShift";
 import { updateSchedule } from "../api/updateSchedule";
-import { getMondayOfWeek } from "../utils/getMondayOfWeek";
+import { getSundayOfWeek } from "../utils/getSundayOfWeek";
+import { getCurrentUser } from "../api/getCurrentUser";
+import SuccessfulNotification from "./utils/SuccessfulNotification";
+import ShiftDetail from "./ShiftDetail";
 
 function renderEventContent(eventInfo) {
-  console.log(eventInfo);
   let desc = eventInfo.event.extendedProps.desc;
   if (desc && desc.length > 20) {
     desc = desc.slice(0, 20) + "...";
   }
   return (
     <>
-      {eventInfo.timeText}: <b>{eventInfo.event.title}</b>
+      {eventInfo.event.allDay ? "All day" : eventInfo.timeText}:{" "}
+      <b>{eventInfo.event.title}</b>
     </>
   );
 }
@@ -41,8 +43,10 @@ function TestSchedule({ employeeId }) {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isScheduleExist, setIsScheduleExist] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
 
   let schedule = useRef(null);
+  let currentUser = useRef(null);
   //   Fetch a list of shifts from the database
   useEffect(() => {
     const currentDate = new Date();
@@ -66,8 +70,13 @@ function TestSchedule({ employeeId }) {
         setIsScheduleExist(true);
       }
     };
+    const fetchUser = async () => {
+      currentUser.current = await getCurrentUser(userToken);
+    };
     fetchDate();
+    fetchUser();
   }, []);
+  //  Convert the currentEvents to a dataSource that is compatible with the FullCalendar to allow rendering
   useEffect(() => {
     const newDataSource = currentEvents.map((event) => {
       return {
@@ -76,22 +85,31 @@ function TestSchedule({ employeeId }) {
         start: event.start,
         end: event.end,
         allDay: event.allDay,
-        extendedProps: {
-          desc: event.desc,
-        },
       };
     });
     setDataSource(newDataSource);
   }, [currentEvents]);
 
+  // add the selected event to the currentEvents
   useEffect(() => {
-    if (selectedEvent && "name" in selectedEvent) {
+    if (selectedEvent && isFormSubmitted) {
       setCurrentEvents((events) => {
-        const newEvents = [selectedEvent, ...events];
+        const scheduleId = schedule.current && schedule.current.id;
+        const newEvents = [
+          {
+            ...selectedEvent,
+            employeeId: employeeId,
+            createdBy: currentUser.current.id,
+            parentSchedule: scheduleId,
+          },
+          ...events,
+        ];
         return newEvents;
       });
+      setIsFormSubmitted(false);
     }
   }, [selectedEvent]);
+
   const handleDateSelect = (selectInfo) => {
     setSelectedEvent({
       id: uuid(),
@@ -103,13 +121,11 @@ function TestSchedule({ employeeId }) {
   };
 
   const handleEventClick = (clickInfo) => {
-    if (
-      confirm(
-        `Are you sure you want to delete the event '${clickInfo.event.title}'`
-      )
-    ) {
-      clickInfo.event.remove();
-    }
+    const eventId = clickInfo.event.id;
+    const event = currentEvents.find((event) => event.id === eventId);
+    setSelectedEvent({ ...event, createdBy: currentUser.current });
+    // clickInfo.event.remove();
+    setIsDetailModalOpen(true);
   };
 
   const submitFormHandler = (event) => {
@@ -133,20 +149,21 @@ function TestSchedule({ employeeId }) {
     event.target.desc.value = "";
     event.target.location.value = "";
     setIsFormModalOpen(false);
+    setIsFormSubmitted(true);
   };
 
   const saveNewSchedule = async () => {
     let res = null;
-    // Get a list of new shifts
-    const newShifts = currentEvents.filter((event) => {
-      return !schedule.current.shiftIdList.includes(event.id);
-    });
-    // Create a new instance for each shift
-    for (let i = 0; i < newShifts.length; i++) {
-      await createShift(userToken, newShifts[i]);
-    }
     // update the schedule
     if (isScheduleExist) {
+      // Get a list of new shifts
+      const newShifts = currentEvents.filter((event) => {
+        return !schedule.current.shiftIdList.includes(event.id);
+      });
+      // Create a new instance for each shift
+      for (let i = 0; i < newShifts.length; i++) {
+        await createShift(userToken, newShifts[i]);
+      }
       if (newShifts.length > 1) {
         res = await updateSchedule(userToken, employeeId, {
           addMultipleShifts: newShifts.map((shift) => shift.id),
@@ -161,14 +178,25 @@ function TestSchedule({ employeeId }) {
     else {
       res = await createSchedule(userToken, {
         shiftIdList: currentEvents.map((event) => event.id),
-        startTime: getMondayOfWeek(),
+        startTime: getSundayOfWeek(),
         employeeId: schedule.current.employeeId,
       });
+      const scheduleId = res.id;
+      const shifts = currentEvents.map((event) => {
+        return {
+          ...event,
+          scheduleId: scheduleId,
+        };
+      });
+      for (let i = 0; i < shifts.length; i++) {
+        await createShift(userToken, shifts[i]);
+      }
     }
     if (res) {
       console.log(res);
       setIsSaved(true);
     }
+    setIsSaved(true);
   };
   const resetSchedule = async () => {
     const startDate = schedule.current.startTime;
@@ -185,14 +213,19 @@ function TestSchedule({ employeeId }) {
         selectedEvent={selectedEvent}
         onSubmit={submitFormHandler}
       />
+      <ShiftDetail
+        shift={selectedEvent}
+        isModalOpen={isDetailModalOpen}
+        closeModal={() => setIsDetailModalOpen(false)}
+      />
       <Theme1 />
-      <div className="demo-app-main">
+      <div>
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           headerToolbar={{
             left: "prev,next today",
             center: "title",
-            right: "dayGridMonth,timeGridWeek,timeGridDay",
+            right: "timeGridWeek,timeGridDay",
           }}
           initialView="dayGridWeek"
           editable={true}
@@ -204,6 +237,13 @@ function TestSchedule({ employeeId }) {
           eventContent={renderEventContent} // custom render function
           eventClick={handleEventClick}
         />
+        {isSaved && (
+          <SuccessfulNotification
+            message="Your schedule has been saved successfully."
+            showCloseButton={true}
+            onClose={() => setIsSaved(false)}
+          />
+        )}
         <div id="buttonSet" className="flex items-center justify-center my-5">
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
