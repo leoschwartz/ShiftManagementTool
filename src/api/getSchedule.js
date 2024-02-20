@@ -1,7 +1,7 @@
 import axios from "axios";
 export const getSchedule = async (userToken, employeeId, date) => {
-  //   const apiUrl = import.meta.env.VITE_API_URL + "/schedule/getByDate";
-  const apiUrl = "http://localhost:5000/schedule/getByDate";
+    const apiUrl = import.meta.env.VITE_API_URL + "/schedule/getByDate";
+  // const apiUrl = "http://localhost:5000/schedule/getByDate";
   if (!apiUrl) {
     throw new Error("API_URL is not defined");
   }
