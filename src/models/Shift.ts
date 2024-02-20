@@ -20,6 +20,8 @@ export class Shift {
     desc: String;
     completed: boolean; 
 }
+
+
 //Convert shift object to FullCalendar event
 export function shiftToEvent(shift) {
     return {
@@ -31,6 +33,8 @@ export function shiftToEvent(shift) {
         },
     };
 }
+
+
 //Retrieve FullCalendar events
 export async function getEvents(user, fetchInfo) {
     const events : Object[] = [];
@@ -39,6 +43,8 @@ export async function getEvents(user, fetchInfo) {
     });
     return events;
 }
+
+
 export async function getEvent(id) {
     const returned = await getShift(id);
     if (!returned)

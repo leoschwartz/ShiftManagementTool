@@ -118,7 +118,10 @@ const EmployeeList = () => {
                 <li key={index} className="flex relative">
                   {/* <span className="ml-2">{employee.firstName + " " + employee.lastName}</span> */}
                   <span className="ml-2">Employee#{index + 1}</span>
-                  <Link to={"/scheduleEditor/" + employee} className="absolute right-0 bg-forth align-middle hover:bg-fifth text-white px-1 rounded">
+                  <Link
+                    to={"/scheduleEditor/" + employee}
+                    className="absolute right-0 bg-forth align-middle hover:bg-fifth text-white px-1 rounded"
+                  >
                     Edit Schedule
                   </Link>
                 </li>
