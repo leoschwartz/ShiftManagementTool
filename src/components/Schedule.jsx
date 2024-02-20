@@ -4,7 +4,7 @@ import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import editablePlugin, { Draggable } from "@fullcalendar/interaction";
 import styled from "@emotion/styled";
-import { shiftToEvent } from "../common/Shift";
+import { shiftToEvent } from "../models/Shift";
 import { getShift } from "../api/getShift";
 import { getShifts } from "../api/getShifts";
 import { flagShiftCompleted } from "../api/flagShiftCompleted";

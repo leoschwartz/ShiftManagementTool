@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -9,6 +9,13 @@ import ScheduleAddFullEmptyForm from "./ScheduleAddFullEmptyForm";
 import { getSchedule } from "../api/getSchedule";
 import { useAtom } from "jotai";
 import { userTokenAtom } from "../globalAtom";
+import { ShiftSchedule } from "../models/shiftSchedule";
+import { getShifts } from "../api/getShifts";
+import { createSchedule } from "../api/createSchedule";
+import PropTypes from "prop-types";
+import { createShift } from "../api/createShift";
+import { updateSchedule } from "../api/updateSchedule";
+import { getMondayOfWeek } from "../utils/getMondayOfWeek";
 
 function renderEventContent(eventInfo) {
   console.log(eventInfo);
@@ -17,19 +24,13 @@ function renderEventContent(eventInfo) {
     desc = desc.slice(0, 20) + "...";
   }
   return (
-    <div>
-      <p>{eventInfo.timeText}</p>
-      <p>
-        <b>{eventInfo.event.title}</b>
-      </p>
-      {desc && desc.length > 0 && (
-        <p className="hidden sm:inline">Desc: {desc}</p>
-      )}
-    </div>
+    <>
+      {eventInfo.timeText}: <b>{eventInfo.event.title}</b>
+    </>
   );
 }
 
-function TestSchedule() {
+function TestSchedule({ employeeId }) {
   // store a list of events that will be saved into the database
   const [userToken] = useAtom(userTokenAtom);
   const [currentEvents, setCurrentEvents] = useState([]);
@@ -39,18 +40,33 @@ function TestSchedule() {
   const [dataSource, setDataSource] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isScheduleExist, setIsScheduleExist] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+
+  let schedule = useRef(null);
   //   Fetch a list of shifts from the database
   useEffect(() => {
-    // TODO: Fetch the schedule from the database and a list of shifts from the database
-    // const currentDate = new Date();
-    // const fetchDate = async () => {
-    //   const res = await getSchedule(userToken, 1, currentDate);
-    //   if (res) {
-    //     setCurrentEvents(res);
-    //     setIsScheduleExist(true);
-    //   }
-    // };
-    // fetchDate();
+    const currentDate = new Date();
+    const fetchDate = async () => {
+      const res = await getSchedule(
+        userToken,
+        employeeId,
+        currentDate.toISOString()
+      );
+      if (res) {
+        const startDate = new Date(res.startTime);
+        const endDate = new Date(res.endTime);
+        const shifts = await getShifts(
+          userToken,
+          employeeId,
+          startDate,
+          endDate
+        );
+        schedule.current = res;
+        setCurrentEvents(shifts);
+        setIsScheduleExist(true);
+      }
+    };
+    fetchDate();
   }, []);
   useEffect(() => {
     const newDataSource = currentEvents.map((event) => {
@@ -119,14 +135,46 @@ function TestSchedule() {
     setIsFormModalOpen(false);
   };
 
-  const saveNewSchedule = () => {
-    // TODO: Save the currentEvents into the database
-    console.log("saveNewSchedule");
+  const saveNewSchedule = async () => {
+    let res = null;
+    // Get a list of new shifts
+    const newShifts = currentEvents.filter((event) => {
+      return !schedule.current.shiftIdList.includes(event.id);
+    });
+    // Create a new instance for each shift
+    for (let i = 0; i < newShifts.length; i++) {
+      await createShift(userToken, newShifts[i]);
+    }
+    // update the schedule
+    if (isScheduleExist) {
+      if (newShifts.length > 1) {
+        res = await updateSchedule(userToken, employeeId, {
+          addMultipleShifts: newShifts.map((shift) => shift.id),
+        });
+      } else if (newShifts.length === 1) {
+        res = await updateSchedule(userToken, employeeId, {
+          addShift: newShifts[0].id,
+        });
+      }
+    }
+    // or create a new one
+    else {
+      res = await createSchedule(userToken, {
+        shiftIdList: currentEvents.map((event) => event.id),
+        startTime: getMondayOfWeek(),
+        employeeId: schedule.current.employeeId,
+      });
+    }
+    if (res) {
+      console.log(res);
+      setIsSaved(true);
+    }
   };
-  const resetSchedule = () => {
-    // TODO: Fetch the schedule from the database and a list of shifts from the database again to reset the schedule
-    console.log("resetSchedule");
-    setCurrentEvents([]);
+  const resetSchedule = async () => {
+    const startDate = schedule.current.startTime;
+    const endDate = schedule.current.endTime;
+    const shifts = await getShifts(userToken, employeeId, startDate, endDate);
+    setCurrentEvents(shifts);
   };
 
   return (
@@ -174,4 +222,8 @@ function TestSchedule() {
     </>
   );
 }
+
+TestSchedule.propTypes = {
+  employeeId: PropTypes.string.isRequired,
+};
 export default TestSchedule;

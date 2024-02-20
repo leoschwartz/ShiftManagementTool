@@ -6,15 +6,18 @@ export const getSchedule = async (userToken, employeeId, date) => {
     throw new Error("API_URL is not defined");
   }
   try {
-    const res = await axios.get(apiUrl, {
-      data: {
+    const res = await axios.post(
+      apiUrl,
+      {
         employeeId: employeeId,
         date: date,
       },
-      headers: {
-        Authorization: "Bearer " + userToken,
-      },
-    });
+      {
+        headers: {
+          Authorization: "Bearer " + userToken,
+        },
+      }
+    );
     return res.data;
   } catch (error) {
     console.log(error);

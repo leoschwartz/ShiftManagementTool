@@ -31,9 +31,12 @@ export default function ShiftDetail(props) {
         </div>
         <div className="flex justify-between">
           <h2 className="text-xl font-bold">Completed:</h2>
-          <p className="text-xl font-bold">
-            {shift.completed ? "Yep" : "Nope"}
-          </p>
+          <input
+            type="checkbox"
+            checked={shift.completed}
+            className="text-xl font-bold"
+            disabled
+          />
         </div>
       </div>
     </Modal>

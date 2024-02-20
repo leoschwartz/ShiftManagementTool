@@ -26,7 +26,7 @@ const ScheduleView = () => {
     // </section>
     <div>
       <h1>This is a new testing schedule</h1>
-      <TestSchedule />
+      <TestSchedule employeeId={employee} />
     </div>
   );
 };
