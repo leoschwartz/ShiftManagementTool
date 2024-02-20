@@ -16,6 +16,7 @@ import { createShift } from "../api/createShift";
 import { updateSchedule } from "../api/updateSchedule";
 import { getSundayOfWeek } from "../utils/getSundayOfWeek";
 import { getCurrentUser } from "../api/getCurrentUser";
+import { deleteShift } from "../api/deleteShift";
 import SuccessfulNotification from "./utils/SuccessfulNotification";
 import ShiftDetail from "./ShiftDetail";
 
@@ -44,6 +45,7 @@ function TestSchedule({ employeeId }) {
   const [isScheduleExist, setIsScheduleExist] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [deletedShiftIds, setDeletedShiftIds] = useState([]);
 
   let schedule = useRef(null);
   let currentUser = useRef(null);
@@ -88,7 +90,6 @@ function TestSchedule({ employeeId }) {
         allDay: event.allDay,
       };
     });
-    console.log(newDataSource);
     setDataSource(newDataSource);
   }, [currentEvents]);
 
@@ -154,10 +155,29 @@ function TestSchedule({ employeeId }) {
     setIsFormSubmitted(true);
   };
 
+  // add the removed shift id to the deletedShiftIds list (only delete the shift from the database when the schedule is saved)
+  const addRemovedShiftToList = (shiftId) => {
+    setDeletedShiftIds((ids) => {
+      return [...ids, shiftId];
+    });
+    setCurrentEvents((events) => {
+      return events.filter((event) => event.id !== shiftId);
+    });
+    setIsDetailModalOpen(false);
+  };
+
   const saveNewSchedule = async () => {
     let res = null;
-    // update the schedule
+    // if the schedule already exists, update it
     if (isScheduleExist) {
+      // Delete the shifts that are removed and already in the database
+      const deletedShifts = deletedShiftIds.filter((id) => {
+        return schedule.current.shiftIdList.includes(id);
+      });
+      for (let i = 0; i < deletedShifts.length; i++) {
+        await deleteShift(userToken, deletedShifts[i]);
+      }
+      setDeletedShiftIds([]);
       // Get a list of new shifts
       const newShifts = currentEvents.filter((event) => {
         return !schedule.current.shiftIdList.includes(event.id);
@@ -166,6 +186,8 @@ function TestSchedule({ employeeId }) {
       for (let i = 0; i < newShifts.length; i++) {
         await createShift(userToken, newShifts[i]);
       }
+
+      // update the schedule
       if (newShifts.length > 1) {
         res = await updateSchedule(userToken, employeeId, {
           addMultipleShifts: newShifts.map((shift) => shift.id),
@@ -200,6 +222,7 @@ function TestSchedule({ employeeId }) {
     }
     if (res) {
       setIsSaved(true);
+      schedule.current = res;
     }
   };
   const resetSchedule = async () => {
@@ -225,6 +248,7 @@ function TestSchedule({ employeeId }) {
         shift={selectedEvent}
         isModalOpen={isDetailModalOpen}
         closeModal={() => setIsDetailModalOpen(false)}
+        onDelete={(id) => addRemovedShiftToList(id)}
       />
       <Theme1 />
       <div>
@@ -256,7 +280,13 @@ function TestSchedule({ employeeId }) {
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2 disabled:opacity-50"
             onClick={saveNewSchedule}
-            disabled={currentEvents.length === 0 || isSaved}
+            disabled={
+              deletedShiftIds.length === 0 ||
+              isSaved ||
+              (schedule.current != null &&
+                schedule.current.shiftIdList.length === currentEvents.length &&
+                deletedShiftIds.length === 0)
+            }
           >
             Save
           </button>
