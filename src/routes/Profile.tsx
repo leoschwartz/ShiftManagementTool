@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useAtom } from "jotai";
 import { userTokenAtom, userAccessLevelAtom } from "../globalAtom";
+import { Modal, Button, Checkbox, Label, TextInput, Toast, Spinner } from 'flowbite-react';
+import { HiCheck, HiX } from 'react-icons/hi';
 
 const Profile = () => {
-  // Variables for populating and editing
   const [editingFirstName, setEditingFirstName] = useState(false);
   const [editingLastName, setEditingLastName] = useState(false);
   const [editingActive, setEditingActive] = useState(false);
@@ -27,10 +28,10 @@ const Profile = () => {
   const [userToken] = useAtom(userTokenAtom);
   const [currAccessLevel] = useAtom(userAccessLevelAtom);
 
-  //
-  // console.log(userToken);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  //Populate user variables
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -63,79 +64,9 @@ const Profile = () => {
     fetchUserProfile();
   }, [userToken]);
 
-  // Popup handlers
-  const openFirstNameEditor = () => {
-    setEditingFirstName(true);
-    setEditedFirstName(firstName);
-  };
-
-  const openLastNameEditor = () => {
-    setEditingLastName(true);
-    setEditedLastName(lastName);
-  };
-
-  const openActiveEditor = () => {
-    setEditingActive(true);
-    setEditedActive(active);
-  };
-
-  const openAccessLevelEditor = () => {
-    setEditingAccessLevel(true);
-    setEditedAccessLevel(accessLevel);
-  };
-
-  const openReportsToEditor = () => {
-    setEditingReportsTo(true);
-    setEditedReportsTo(reportsTo);
-  };
-
-  const closeFirstNameEditor = () => {
-    setEditingFirstName(false);
-  };
-
-  const closeLastNameEditor = () => {
-    setEditingLastName(false);
-  };
-
-  const closeActiveEditor = () => {
-    setEditingActive(false);
-  };
-
-  const closeAccessLevelEditor = () => {
-    setEditingAccessLevel(false);
-  };
-
-  const closeReportsToEditor = () => {
-    setEditingReportsTo(false);
-  };
-
-  const saveFirstName = () => {
-    setFirstName(editedFirstName);
-    closeFirstNameEditor();
-  };
-
-  const saveLastName = () => {
-    setLastName(editedLastName);
-    closeLastNameEditor();
-  };
-
-  const saveActive = () => {
-    setActive(editedActive);
-    closeActiveEditor();
-  };
-
-  const saveAccessLevel = () => {
-    setAccessLevel(editedAccessLevel);
-    closeAccessLevelEditor();
-  };
-
-  const saveReportsTo = () => {
-    setReportsTo(editedReportsTo);
-    closeReportsToEditor();
-  };
-
   const saveChanges = async () => {
     try {
+      setLoading(true);
       const response = await fetch(
         `${(import.meta as any).env.VITE_API_URL}/user`,
         {
@@ -148,13 +79,21 @@ const Profile = () => {
             firstName: editedFirstName,
             lastName: editedLastName,
             active: editedActive,
-            accessLevel: editedAccessLevel,
+            accessLevel: currAccessLevel,
             reportTo: editedReportsTo,
           }),
         }
       );
+      if (response.ok) {
+        setShowSuccessToast(true);
+      } else {
+        setShowErrorToast(true);
+      }
     } catch (error) {
       console.error("Error saving changes:", error);
+      setShowErrorToast(true); 
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -168,7 +107,6 @@ const Profile = () => {
         <div className="blur-[106px] h-3/4 bg-gradient-to-r from-forth to-fifth opacity-30"></div>
       </div>
       <div className="flex flex-col items-center mt-16 px-8 lg:px-32 md:px-24 sm:px-16">
-        {/* Profile Pic */}
         <div className="w-32 h-32 bg-gray-300 rounded-full overflow-hidden">
           <img
             className="w-full h-full object-cover"
@@ -177,9 +115,7 @@ const Profile = () => {
           />
         </div>
 
-        {/* Details */}
         <div className="mt-4 text-center w-full">
-          {/* Frame for the details block */}
           <div className="bg-white p-4 border border-primary rounded-lg">
             <ul className="text-left space-y-2">
               <li className="pb-2 mb-2 flex">
@@ -189,7 +125,7 @@ const Profile = () => {
                 <span className="ml-2">{firstName}</span>
                 <button
                   className="ml-auto text-white bg-secondary hover:bg-primary focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                  onClick={openFirstNameEditor}
+                  onClick={() => setEditingFirstName(true)}
                 >
                   Edit
                 </button>
@@ -201,7 +137,7 @@ const Profile = () => {
                 <span className="ml-2">{lastName}</span>
                 <button
                   className="ml-auto text-white bg-secondary hover:bg-primary focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                  onClick={openLastNameEditor}
+                  onClick={() => setEditingLastName(true)}
                 >
                   Edit
                 </button>
@@ -211,7 +147,6 @@ const Profile = () => {
                 <span className="ml-2">{email}</span>
               </li>
               {currAccessLevel >= 1 ? (
-                // Render Edit button for managers and admins
                 <li className="pb-2 mb-2 flex">
                   <span className="font-semibold w-20 inline-block">
                     Active:
@@ -219,13 +154,12 @@ const Profile = () => {
                   <span className="ml-2">{active ? "Yes" : "No"}</span>
                   <button
                     className="ml-auto text-white bg-secondary hover:bg-primary focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                    onClick={openActiveEditor}
+                    onClick={() => setEditingActive(true)}
                   >
                     Edit
                   </button>
                 </li>
               ) : (
-                // Render without Edit button for employees
                 <li className="pb-2 mb-2 flex">
                   <span className="font-semibold w-20 inline-block">
                     Active:
@@ -234,7 +168,6 @@ const Profile = () => {
                 </li>
               )}
               {currAccessLevel >= 1 ? (
-                // Render Edit button for managers and admins
                 <li className="pb-2 mb-2 flex">
                   <span className="font-semibold w-20 inline-block">
                     Access Level:
@@ -242,13 +175,12 @@ const Profile = () => {
                   <span className="ml-2">{accessLevel}</span>
                   <button
                     className="ml-auto text-white bg-secondary hover:bg-primary focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                    onClick={openAccessLevelEditor}
+                    onClick={() => setEditingAccessLevel(true)}
                   >
                     Edit
                   </button>
                 </li>
               ) : (
-                // Render without Edit button for employees
                 <li className="pb-2 mb-2 flex">
                   <span className="font-semibold w-20 inline-block">
                     Access Level:
@@ -257,7 +189,6 @@ const Profile = () => {
                 </li>
               )}
               {currAccessLevel >= 1 ? (
-                // Render Edit button for managers and admins
                 <li className="pb-2 mb-2 flex">
                   <span className="font-semibold w-20 inline-block">
                     Reports To:
@@ -265,13 +196,12 @@ const Profile = () => {
                   <span className="ml-2">{reportsTo}</span>
                   <button
                     className="ml-auto text-white bg-secondary hover:bg-primary focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                    onClick={openReportsToEditor}
+                    onClick={() => setEditingReportsTo(true)}
                   >
                     Edit
                   </button>
                 </li>
               ) : (
-                // Render without Edit button for employees
                 <li className="pb-2 mb-2 flex">
                   <span className="font-semibold w-20 inline-block">
                     Reports To:
@@ -279,36 +209,48 @@ const Profile = () => {
                   <span className="ml-2">{reportsTo}</span>
                 </li>
               )}
-              {/* Employee List shown if manager
-              {currAccessLevel === 1 && (
-                <li className="pb-2 mb-2 flex">
-                  <span className="font-semibold w-20 inline-block">Employee List:</span>
-                  <span className="ml-2">
-                    <Link to="/profile">
-                      <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.2 9.8a3.4 3.4 0 0 0-4.8 0L5 13.2A3.4 3.4 0 0 0 9.8 18l.3-.3m-.3-4.5a3.4 3.4 0 0 0 4.8 0L18 9.8A3.4 3.4 0 0 0 13.2 5l-1 1"/>
-                      </svg>
-                    </Link>
-                  </span>
-                </li>
-              )} */}
             </ul>
           </div>
         </div>
 
-        {/* Save Changes button */}
+        {/* Save Changes button with spinner */}
         <div className="flex justify-start mt-4">
-          <button
-            className="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded"
-            onClick={saveChanges}
-          >
-            Save Changes
-          </button>
+          {loading ? ( 
+            <Spinner aria-label="Saving changes..." color="pink"/>
+          ) : (
+            <button
+              className="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded"
+              onClick={saveChanges}
+            >
+              Save Changes
+            </button>
+          )}
         </div>
 
-        {/* Popup for First Name edit */}
-        {editingFirstName && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        {/* Success Toast */}
+        {showSuccessToast && (
+          <Toast style={{ position: 'fixed', bottom: '20px', left: '20px' }}>
+            <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-500 dark:bg-green-800 dark:text-green-200">
+              <HiCheck className="h-5 w-5" />
+            </div>
+            <div className="ml-3 text-sm font-normal">Changes saved</div>
+            <Toast.Toggle onClick={() => setShowSuccessToast(false)} />
+          </Toast>
+        )}
+
+        {/* Error Toast */}
+        {showErrorToast && (
+          <Toast style={{ position: 'fixed', bottom: '20px', left: '20px' }}>
+            <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-500 dark:bg-red-800 dark:text-red-200">
+              <HiX className="h-5 w-5" />
+            </div>
+            <div className="ml-3 text-sm font-normal">Failed to save changes</div>
+            <Toast.Toggle onClick={() => setShowErrorToast(false)} />
+          </Toast>
+        )}
+
+        <Modal show={editingFirstName} popup onClose={() => setEditingFirstName(false)}>
+          <Modal.Body>
             <div className="bg-white p-8 rounded-lg">
               <h2 className="text-lg font-semibold mb-4">Edit First Name</h2>
               <input
@@ -320,24 +262,26 @@ const Profile = () => {
               <div className="flex justify-end">
                 <button
                   className="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded mr-2"
-                  onClick={saveFirstName}
+                  onClick={() => {
+                    setFirstName(editedFirstName);
+                    setEditingFirstName(false);
+                  }}
                 >
                   Save
                 </button>
                 <button
                   className="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
-                  onClick={closeFirstNameEditor}
+                  onClick={() => setEditingFirstName(false)}
                 >
                   Cancel
                 </button>
               </div>
             </div>
-          </div>
-        )}
+          </Modal.Body>
+        </Modal>
 
-        {/* Popup for Last Name edit */}
-        {editingLastName && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <Modal show={editingLastName} popup onClose={() => setEditingLastName(false)}>
+          <Modal.Body>
             <div className="bg-white p-8 rounded-lg">
               <h2 className="text-lg font-semibold mb-4">Edit Last Name</h2>
               <input
@@ -349,24 +293,26 @@ const Profile = () => {
               <div className="flex justify-end">
                 <button
                   className="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded mr-2"
-                  onClick={saveLastName}
+                  onClick={() => {
+                    setLastName(editedLastName);
+                    setEditingLastName(false);
+                  }}
                 >
                   Save
                 </button>
                 <button
                   className="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
-                  onClick={closeLastNameEditor}
+                  onClick={() => setEditingLastName(false)}
                 >
                   Cancel
                 </button>
               </div>
             </div>
-          </div>
-        )}
+          </Modal.Body>
+        </Modal>
 
-        {/* Popup for Active edit */}
-        {editingActive && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <Modal show={editingActive} popup onClose={() => setEditingActive(false)}>
+          <Modal.Body>
             <div className="bg-white p-8 rounded-lg">
               <h2 className="text-lg font-semibold mb-4">Edit Active</h2>
               <label>
@@ -381,23 +327,26 @@ const Profile = () => {
               <div className="flex justify-end">
                 <button
                   className="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded mr-2"
-                  onClick={saveActive}
+                  onClick={() => {
+                    setActive(editedActive);
+                    setEditingActive(false);
+                  }}
                 >
                   Save
                 </button>
                 <button
                   className="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
-                  onClick={closeActiveEditor}
+                  onClick={() => setEditingActive(false)}
                 >
                   Cancel
                 </button>
               </div>
             </div>
-          </div>
-        )}
-        {/* Popup for Access Level edit */}
-        {editingAccessLevel && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          </Modal.Body>
+        </Modal>
+
+        <Modal show={editingAccessLevel} popup onClose={() => setEditingAccessLevel(false)}>
+          <Modal.Body>
             <div className="bg-white p-8 rounded-lg">
               <h2 className="text-lg font-semibold mb-4">Edit Access Level</h2>
               <input
@@ -409,24 +358,26 @@ const Profile = () => {
               <div className="flex justify-end">
                 <button
                   className="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded mr-2"
-                  onClick={saveAccessLevel}
+                  onClick={() => {
+                    setAccessLevel(editedAccessLevel);
+                    setEditingAccessLevel(false);
+                  }}
                 >
                   Save
                 </button>
                 <button
                   className="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
-                  onClick={closeAccessLevelEditor}
+                  onClick={() => setEditingAccessLevel(false)}
                 >
                   Cancel
                 </button>
               </div>
             </div>
-          </div>
-        )}
+          </Modal.Body>
+        </Modal>
 
-        {/* Popup for Reports To edit */}
-        {editingReportsTo && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <Modal show={editingReportsTo} popup onClose={() => setEditingReportsTo(false)}>
+          <Modal.Body>
             <div className="bg-white p-8 rounded-lg">
               <h2 className="text-lg font-semibold mb-4">Edit Reports To</h2>
               <input
@@ -438,23 +389,28 @@ const Profile = () => {
               <div className="flex justify-end">
                 <button
                   className="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded mr-2"
-                  onClick={saveReportsTo}
+                  onClick={() => {
+                    setReportsTo(editedReportsTo);
+                    setEditingReportsTo(false);
+                  }}
                 >
                   Save
                 </button>
                 <button
                   className="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
-                  onClick={closeReportsToEditor}
+                  onClick={() => setEditingReportsTo(false)}
                 >
                   Cancel
                 </button>
               </div>
             </div>
-          </div>
-        )}
+          </Modal.Body>
+        </Modal>
+
       </div>
     </>
   );
 };
 
 export default Profile;
+

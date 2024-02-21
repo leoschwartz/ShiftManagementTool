@@ -1,12 +1,15 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Navbar as FbNavbar } from "flowbite-react";
-import { isLoggedInAtom, userAccessLevelAtom } from "../globalAtom";
+import { isLoggedInAtom, userAccessLevelAtom, userTokenAtom } from "../globalAtom";
 import { useAtom } from "jotai";
 
 function Navbar() {
   const [isLoggedIn] = useAtom(isLoggedInAtom);
   const [accessLevel] = useAtom(userAccessLevelAtom);
+  const [, setUserTokenAtom] = useAtom(userTokenAtom);
+  const location = useLocation();
+
   let redirectPath =
     accessLevel === 0
       ? "/schedule"
@@ -16,8 +19,9 @@ function Navbar() {
       ? "/addNewUser"
       : "/unauthorize";
   const handleLogout = () => {
-    //
+    setUserTokenAtom(null);
   };
+  const isLoginPage = !isLoggedIn && location.pathname === "/login";
 
   return (
     <FbNavbar
@@ -78,8 +82,8 @@ function Navbar() {
           </>
         )}
       </FbNavbar.Collapse>
-      {/* Login button outside hamburguer menu */}
-      {!isLoggedIn && (
+      {/* Login button outside hamburger menu */}
+      {!isLoginPage && !isLoggedIn && ( // Omit the log in button on the login page
         <div className="hidden md:block">
           <Link
             to="/login"

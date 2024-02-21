@@ -8,17 +8,21 @@ import {
   userIdAtom,
   homeRedirectAtom,
 } from "../globalAtom";
+import { Spinner } from 'flowbite-react';
 
 function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [isLoading, setIsLoading] = React.useState(false);
   const [, setUserToken] = useAtom(userTokenAtom);
   const [, setUserAccessLevel] = useAtom(userAccessLevelAtom);
   const [, setUserId] = useAtom(userIdAtom);
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setIsLoading(true);
     const data = await authenticateUser(email, password);
+    setIsLoading(false);
     if (data) {
       const token = data.token;
       const accessLevel = data.accessLevel;
@@ -74,9 +78,13 @@ function Login() {
               />
             </div>
           </div>
-          <button className="bg-forth hover:bg-fifth text-white px-4 py-2 rounded mx-auto">
-            Submit
-          </button>
+          {isLoading ? (
+            <Spinner aria-label="Loading" color="pink"/>
+          ) : (
+            <button className="bg-forth hover:bg-fifth text-white px-4 py-2 rounded mx-auto">
+              Submit
+            </button>
+          )}
         </form>
       </div>
     </section>
