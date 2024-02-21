@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useAtom } from "jotai";
-import { Table } from "flowbite-react";
 import { userTokenAtom, userIdAtom } from "../globalAtom";
 import React from "react";
 import TablesByCategory from "../components/TablesByCategory";
@@ -28,10 +27,8 @@ const EmployeeList = () => {
 
         if (response.ok) {
           const userData = await response.json();
-          if (userData.employees) {
-            setEmployeeList(userData.employees);
-            console.log("#### Employee List ####");
-            console.log(employeeList);
+          if (userData.employeeList) {
+            setEmployeeList(userData.employeeList);
           } else {
             console.warn("employeeList is null!");
             setEmployeeList([]);
@@ -44,7 +41,7 @@ const EmployeeList = () => {
       }
     };
     fetchEmployeeList();
-  }, [userToken]);
+  }, []);
 
   return (
     <>

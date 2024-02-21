@@ -1,8 +1,11 @@
 import Modal from "./utils/Modal";
 import PropTypes from "prop-types";
 import { dateToHourMinute } from "../utils/dateToHourMinute";
+import { useAtom } from "jotai";
+import { userAccessLevelAtom } from "../globalAtom";
 export default function ShiftDetail(props) {
   const shift = props.shift;
+  const [userAccessLevel] = useAtom(userAccessLevelAtom);
   return (
     <Modal
       title="Shift Detail"
@@ -57,14 +60,16 @@ export default function ShiftDetail(props) {
           </p>
         </div>
 
-        <div className="flex justify-between mb-4">
-          <button
-            onClick={() => props.onDelete(shift?.id)}
-            className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full"
-          >
-            Delete shift
-          </button>
-        </div>
+        {userAccessLevel > 0 && (
+          <div className="flex justify-between mb-4">
+            <button
+              onClick={() => props.onDelete(shift?.id)}
+              className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full"
+            >
+              Delete shift
+            </button>
+          </div>
+        )}
       </div>
     </Modal>
   );

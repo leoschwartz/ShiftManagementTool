@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useAtom } from "jotai";
 import { Button, Modal, TextInput, Label } from "flowbite-react";
 import { userIdAtom } from "../globalAtom";
-import { Toast } from 'flowbite-react';
-import { HiCheck, HiX } from 'react-icons/hi';
+import { Toast } from "flowbite-react";
+import { HiCheck, HiX } from "react-icons/hi";
+import { addNewUser } from "../api/addNewUser";
 
 // eslint-disable-next-line react/prop-types
 const AddEmployeeButton = ({ userToken }) => {
@@ -19,41 +20,56 @@ const AddEmployeeButton = ({ userToken }) => {
   const handleAddEmployee = async () => {
     try {
       // Create employee
-      const createEmployeeResponse = await fetch(import.meta.env.VITE_API_URL + "/employee/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${userToken}`,
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          firstName,
-          lastName,
-          accessLevel: 0,
-          active: 1,
-          managerId: userId,
-        }),
-      });
-      
-      if (createEmployeeResponse.ok) {
-        const newEmployee = await createEmployeeResponse.json();
+      // const createEmployeeResponse = await fetch(import.meta.env.VITE_API_URL + "/employee/register", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${userToken}`,
+      //   },
+      //   body: JSON.stringify({
+      //     email,
+      //     password,
+      //     firstName,
+      //     lastName,
+      //     accessLevel: 0,
+      //     active: 1,
+      //     managerId: userId,
+      //   }),
+      // });
+      const userInfo = {
+        reportTo: userId,
+        accessLevel: 0,
+        active: 1,
+        firstName,
+        lastName,
+      };
+      const createEmployeeResponse = await addNewUser(
+        userToken,
+        email,
+        password,
+        userInfo
+      );
+      if (createEmployeeResponse.success) {
+        const newEmployee = createEmployeeResponse.user;
         const employeeId = newEmployee.id;
 
         // Add employee to employeeList
-        const updateManagerResponse = await fetch(import.meta.env.VITE_API_URL + "/manager/addEmployee", {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${userToken}`,
-          },
-          body: JSON.stringify({
-            managerId: userId,
-            managerUpdatedData: {
-              addEmployee: employeeId,
+        const updateManagerResponse = await fetch(
+          import.meta.env.VITE_API_URL + "/manager/addEmployee",
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${userToken}`,
             },
-          }),
-        });
+            body: JSON.stringify({
+              managerId: userId,
+              managerUpdatedData: {
+                addEmployee: employeeId,
+              },
+            }),
+          }
+        );
 
         if (updateManagerResponse.ok) {
           console.log("Employee added to manager's list!");
@@ -75,8 +91,19 @@ const AddEmployeeButton = ({ userToken }) => {
 
   return (
     <>
-      <Button onClick={() => setShowAddEmployeePopup(true)} className="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded mr-2" style={{ zIndex: 10 }}>Add Employee</Button>
-      <Modal show={showAddEmployeePopup} size="md" popup onClose={() => setShowAddEmployeePopup(false)}>
+      <Button
+        onClick={() => setShowAddEmployeePopup(true)}
+        className="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded mr-2"
+        style={{ zIndex: 10 }}
+      >
+        Add Employee
+      </Button>
+      <Modal
+        show={showAddEmployeePopup}
+        size="md"
+        popup
+        onClose={() => setShowAddEmployeePopup(false)}
+      >
         <Modal.Body>
           <div className="space-y-6">
             <br />
@@ -126,14 +153,24 @@ const AddEmployeeButton = ({ userToken }) => {
               />
             </div>
             <div className="flex justify-end">
-              <Button onClick={handleAddEmployee} className="text-white bg-green-500 hover:bg-green-600 px-3 py-2 rounded mr-2">Add</Button>
-              <Button onClick={() => setShowAddEmployeePopup(false)} className="text-white bg-red-500 hover:bg-red-600 px-3 py-2 rounded">Cancel</Button>
+              <Button
+                onClick={handleAddEmployee}
+                className="text-white bg-green-500 hover:bg-green-600 px-3 py-2 rounded mr-2"
+              >
+                Add
+              </Button>
+              <Button
+                onClick={() => setShowAddEmployeePopup(false)}
+                className="text-white bg-red-500 hover:bg-red-600 px-3 py-2 rounded"
+              >
+                Cancel
+              </Button>
             </div>
           </div>
         </Modal.Body>
       </Modal>
       {showSuccessToast && (
-        <Toast style={{ position: 'fixed', bottom: '20px', left: '20px' }}>
+        <Toast style={{ position: "fixed", bottom: "20px", left: "20px" }}>
           <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-500 dark:bg-green-800 dark:text-green-200">
             <HiCheck className="h-5 w-5" />
           </div>
@@ -142,11 +179,13 @@ const AddEmployeeButton = ({ userToken }) => {
         </Toast>
       )}
       {showErrorToast && (
-        <Toast style={{ position: 'fixed', bottom: '20px', left: '20px' }}>
+        <Toast style={{ position: "fixed", bottom: "20px", left: "20px" }}>
           <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-500 dark:bg-red-800 dark:text-red-200">
             <HiX className="h-5 w-5" />
           </div>
-          <div className="ml-3 text-sm font-normal">Failed to add employee.</div>
+          <div className="ml-3 text-sm font-normal">
+            Failed to add employee.
+          </div>
           <Toast.Toggle onClick={() => setShowErrorToast(false)} />
         </Toast>
       )}

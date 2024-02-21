@@ -2,7 +2,12 @@ import React from "react";
 import { useNavigate } from "react-router";
 import { authenticateUser } from "../api/authenticateUser";
 import { useAtom } from "jotai";
-import { userTokenAtom, userAccessLevelAtom, userIdAtom } from "../globalAtom";
+import {
+  userTokenAtom,
+  userAccessLevelAtom,
+  userIdAtom,
+  homeRedirectAtom,
+} from "../globalAtom";
 
 function Login() {
   const navigate = useNavigate();
@@ -17,10 +22,18 @@ function Login() {
     if (data) {
       const token = data.token;
       const accessLevel = data.accessLevel;
+      let redirectPath =
+        accessLevel === 0
+          ? "/schedule"
+          : accessLevel === 1
+          ? "/employeeList"
+          : accessLevel === 2
+          ? "/addNewUser"
+          : "/unauthorize";
       setUserToken(token);
       setUserAccessLevel(accessLevel);
       setUserId(data.userId);
-      navigate("/schedule");
+      navigate(redirectPath);
     } else {
       alert("Wrong username or password");
     }

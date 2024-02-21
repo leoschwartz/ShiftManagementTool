@@ -28,7 +28,7 @@ const Profile = () => {
   const [currAccessLevel] = useAtom(userAccessLevelAtom);
 
   //
-  console.log(userToken);
+  // console.log(userToken);
 
   //Populate user variables
   useEffect(() => {

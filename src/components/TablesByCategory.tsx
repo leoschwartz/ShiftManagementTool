@@ -2,24 +2,46 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Table, Spinner } from "flowbite-react";
 import getCategories from "../api/getCategories";
+import { getUser } from "../api/getUser";
 
 const TablesByCategory = ({ userId, userToken, employeeList }) => {
   const [categoryList, setCategoryList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [employeeListDetails, setEmployeeListDetails] = useState<any[]>([]);
+  const [undefinedCategoryEmployees, setUndefinedCategoryEmployees] = useState<
+    any[]
+  >([]);
 
   useEffect(() => {
     const fetchCategories = async () => {
       const categories = await getCategories(userId, userToken);
       setCategoryList(categories);
+      for (let i = 0; i < employeeList.length; i++) {
+        const employeeDetails = await getUser(userToken, employeeList[i]);
+        setEmployeeListDetails((prevState) => [...prevState, employeeDetails]);
+      }
       setLoading(false);
     };
     fetchCategories();
-  }, [userId, userToken]);
+  }, []);
 
-  // Filter employeeList for category -1
-  const undefinedCategoryEmployees = employeeList.filter(
-    (employee) => employee.category === -1
-  );
+  useEffect(() => {
+    if (employeeListDetails) {
+      // setUndefinedCategoryEmployees(
+      //   employeeListDetails.filter(
+      //     (employee) => employee.accountInfo.category === -1
+      //   )
+      // );
+      setUndefinedCategoryEmployees(employee => {
+        const newArray = employeeListDetails.filter(
+          (employee) => employee.accountInfo.category === -1
+        );
+        return [...newArray];
+      })
+    } else {
+      setUndefinedCategoryEmployees([]);
+    }
+  }, [employeeListDetails.length]);
 
   return (
     <>
@@ -35,7 +57,9 @@ const TablesByCategory = ({ userId, userToken, employeeList }) => {
               <div className="overflow-x-auto mt-4">
                 <Table hoverable>
                   <Table.Head>
-                    <Table.HeadCell className="w-3/4">Undefined Category</Table.HeadCell>
+                    <Table.HeadCell className="w-3/4">
+                      Undefined Category
+                    </Table.HeadCell>
                     <Table.HeadCell className="w-1/4">
                       <span className="sr-only">Edit Schedule</span>
                     </Table.HeadCell>
@@ -46,7 +70,7 @@ const TablesByCategory = ({ userId, userToken, employeeList }) => {
                         key={index}
                         className="bg-white dark:border-gray-700 dark:bg-gray-800"
                       >
-                        <Table.Cell className="w-3/4">{`Employee #${employee.id}`}</Table.Cell>
+                        <Table.Cell className="w-3/4">{`${employee.firstName} ${employee.lastName}`}</Table.Cell>
                         <Table.Cell className="w-1/4">
                           <Link
                             to={`/scheduleEditor/${employee.id}`}
@@ -69,7 +93,9 @@ const TablesByCategory = ({ userId, userToken, employeeList }) => {
               <div className="overflow-x-auto mt-4">
                 <Table hoverable>
                   <Table.Head>
-                    <Table.HeadCell className="w-3/4">{category}</Table.HeadCell>
+                    <Table.HeadCell className="w-3/4">
+                      {category}
+                    </Table.HeadCell>
                     <Table.HeadCell className="w-1/4">
                       <span className="sr-only">Edit Schedule</span>
                     </Table.HeadCell>
@@ -82,7 +108,9 @@ const TablesByCategory = ({ userId, userToken, employeeList }) => {
                           key={index}
                           className="bg-white dark:border-gray-700 dark:bg-gray-800"
                         >
-                          <Table.Cell className="w-3/4">{`Employee#${index + 1}`}</Table.Cell>
+                          <Table.Cell className="w-3/4">{`Employee#${
+                            index + 1
+                          }`}</Table.Cell>
                           <Table.Cell className="w-1/4">
                             <Link
                               to={`/scheduleEditor/${employee.id}`}
@@ -94,9 +122,13 @@ const TablesByCategory = ({ userId, userToken, employeeList }) => {
                         </Table.Row>
                       ))}
                     {/* Render if no employees for the category */}
-                    {employeeList.filter((employee) => employee.category === index).length === 0 && (
+                    {employeeListDetails.filter(
+                      (employee) => employee.category === index
+                    ).length === 0 && (
                       <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                        <Table.Cell className="w-3/4">No employees for this category</Table.Cell>
+                        <Table.Cell className="w-3/4">
+                          No employees for this category
+                        </Table.Cell>
                         <Table.Cell className="w-1/4"></Table.Cell> {/* */}
                       </Table.Row>
                     )}
@@ -112,4 +144,3 @@ const TablesByCategory = ({ userId, userToken, employeeList }) => {
 };
 
 export default TablesByCategory;
-

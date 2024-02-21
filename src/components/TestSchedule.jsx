@@ -87,7 +87,7 @@ function TestSchedule({ employeeId }) {
     }
 
     if (calendarRef.current) {
-      console.log("calendarRef.current", calendarRef.current);
+      // console.log("calendarRef.current", calendarRef.current);
       const calendarApi = calendarRef.current.getApi(); // Get the FullCalendar API
       calendarApi.removeAllEvents(); // Remove all existing events
       calendarApi.addEventSource(dataSource); // Add new events to the calendar
