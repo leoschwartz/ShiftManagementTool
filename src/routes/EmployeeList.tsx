@@ -5,6 +5,7 @@ import { userTokenAtom, userIdAtom } from "../globalAtom";
 import React from "react";
 import TablesByCategory from "../components/TablesByCategory";
 import AddCategoryButton from "../components/AddCategoryButton";
+import AddEmployeeButton from "../components/AddEmployeeButton";
 
 const EmployeeList = () => {
   const [employeeList, setEmployeeList] = useState([]);
@@ -17,7 +18,7 @@ const EmployeeList = () => {
     const fetchEmployeeList = async () => {
       try {
         const response = await fetch(
-          `${(import.meta as any).env.VITE_API_URL}/user`,
+          `${(import.meta as any).env.VITE_API_URL}/manager/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${userToken}`,
@@ -27,8 +28,10 @@ const EmployeeList = () => {
 
         if (response.ok) {
           const userData = await response.json();
-          if (userData.employeeList) {
-            setEmployeeList(userData.employeeList);
+          if (userData.employees) {
+            setEmployeeList(userData.employees);
+            console.log("#### Employee List ####");
+            console.log(employeeList);
           } else {
             console.warn("employeeList is null!");
             setEmployeeList([]);
@@ -53,7 +56,10 @@ const EmployeeList = () => {
         <div className="blur-[106px] h-3/4 bg-gradient-to-r from-forth to-fifth opacity-30"></div>
       </div>
       <div className="relative mt-16 px-8 lg:px-32 md:px-24 sm:px-16">
-        <AddCategoryButton userToken={userToken} />
+        <div className="flex mb-4">
+          <AddCategoryButton userToken={userToken} />
+          <AddEmployeeButton userToken={userToken} />
+        </div>
         <TablesByCategory userId={userId} userToken={userToken} employeeList={employeeList} />
         <br />
       </div>
