@@ -157,7 +157,13 @@ const Profile = () => {
 
   return (
     <>
-      <div className="absolute inset-0 bg-gradient-to-tr from-third to-fifth -z-10 opacity-50"></div>
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 grid grid-cols-2 -space-x-52 -z-50"
+      >
+        <div className="blur-[106px] h-1/3 bg-gradient-to-br from-primary to-secondary opacity-50 "></div>
+        <div className="blur-[106px] h-3/4 bg-gradient-to-r from-forth to-fifth opacity-30"></div>
+      </div>
       <div className="flex flex-col items-center mt-16 px-8 lg:px-32 md:px-24 sm:px-16">
         {/* Profile Pic */}
         <div className="w-32 h-32 bg-gray-300 rounded-full overflow-hidden">
