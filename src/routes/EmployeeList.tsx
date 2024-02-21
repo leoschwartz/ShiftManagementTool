@@ -1,82 +1,24 @@
+import { useState, useEffect } from "react";
 import { useAtom } from "jotai";
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { userTokenAtom } from "../globalAtom";
+import { Table } from "flowbite-react";
+import { userTokenAtom, userIdAtom } from "../globalAtom";
+import React from "react";
+import TablesByCategory from "../components/TablesByCategory";
+import AddCategoryButton from "../components/AddCategoryButton";
+import AddEmployeeButton from "../components/AddEmployeeButton";
 
 const EmployeeList = () => {
   const [employeeList, setEmployeeList] = useState([]);
   const [userToken] = useAtom(userTokenAtom);
-  var employeeNum = 0;
-
-  const [showAddEmployeePopup, setShowAddEmployeePopup] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-
-  const openAddEmployeePopup = () => {
-    setShowAddEmployeePopup(true);
-  };
-
-  const closeAddEmployeePopup = () => {
-    setShowAddEmployeePopup(false);
-  };
-
-  const handleCreateEmployee = async () => {
-    try {
-      // Creating new user
-      const createUserResponse = await fetch(
-        `${(import.meta as any).env.VITE_API_URL}/user/register`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${userToken}`,
-          },
-          body: JSON.stringify({
-            email,
-            password,
-            firstName,
-            lastName,
-            accessLevel: 0,
-            reportTo: "manager@gmail.com",
-            active: 1,
-          }),
-        }
-      );
-
-      // Updating the employee list
-      const updateUserResponse = await fetch(
-        `${(import.meta as any).env.VITE_API_URL}/user`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${userToken}`,
-          },
-          body: JSON.stringify({
-            employeeList: [...employeeList, email],
-          }),
-        }
-      );
-
-      if (updateUserResponse.ok) {
-        console.log("Employee list updated successfully!");
-        setEmployeeList([...employeeList, email]);
-        closeAddEmployeePopup();
-      } else {
-        console.error("Failed to update employee list");
-      }
-    } catch (error) {
-      console.error("Error creating employee:", error);
-    }
-  };
+  const [userId] = useAtom(userIdAtom);
 
   useEffect(() => {
+    // Gets the manager employee list so it can be passed to the 
+    // TablesByCategory component
     const fetchEmployeeList = async () => {
       try {
         const response = await fetch(
-          `${(import.meta as any).env.VITE_API_URL}/user`,
+          `${(import.meta as any).env.VITE_API_URL}/manager/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${userToken}`,
@@ -86,8 +28,14 @@ const EmployeeList = () => {
 
         if (response.ok) {
           const userData = await response.json();
-
-          setEmployeeList(userData.employeeList);
+          if (userData.employees) {
+            setEmployeeList(userData.employees);
+            console.log("#### Employee List ####");
+            console.log(employeeList);
+          } else {
+            console.warn("employeeList is null!");
+            setEmployeeList([]);
+          }
         } else {
           console.error("Failed to fetch employee list");
         }
@@ -100,94 +48,20 @@ const EmployeeList = () => {
 
   return (
     <>
-      <div className="absolute inset-0 bg-gradient-to-tr from-third to-fifth -z-10 opacity-50"></div>
-      <div className="flex flex-col items-center mt-16 px-8 lg:px-32 md:px-24 sm:px-16">
-        {/* Add Employee button */}
-        <button
-          className="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded mr-2"
-          onClick={openAddEmployeePopup}
-        >
-          Add Employee
-        </button>
-        {/* Frame for employee list */}
-        <div className="mt-4 text-center w-full">
-          <div className="bg-white p-4 border border-primary rounded-lg">
-            <ul className="text-left space-y-2">
-              {/* Render an <li> for each employee in the list */}
-              {employeeList.map((employee, index) => (
-                <li key={index} className="flex relative">
-                  {/* <span className="ml-2">{employee.firstName + " " + employee.lastName}</span> */}
-                  <span className="ml-2">Employee#{index + 1}</span>
-                  <Link
-                    to={"/scheduleEditor/" + employee}
-                    className="absolute right-0 bg-forth align-middle hover:bg-fifth text-white px-1 rounded"
-                  >
-                    Edit Schedule
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 grid grid-cols-2 -space-x-52 -z-50"
+      >
+        <div className="blur-[106px] h-1/3 bg-gradient-to-br from-primary to-secondary opacity-50 "></div>
+        <div className="blur-[106px] h-3/4 bg-gradient-to-r from-forth to-fifth opacity-30"></div>
+      </div>
+      <div className="relative mt-16 px-8 lg:px-32 md:px-24 sm:px-16">
+        <div className="flex mb-4">
+          <AddCategoryButton userToken={userToken} />
+          <AddEmployeeButton userToken={userToken} />
         </div>
-
-        {/* Add Employee Popup */}
-        {showAddEmployeePopup && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-8">
-            <div className="bg-white p-8 rounded-lg">
-              <h2 className="text-lg font-semibold mb-4">Add Employee</h2>
-              <label>
-                Email:
-                <input
-                  type="text"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded mb-4"
-                />
-              </label>
-              <label>
-                Password:
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded mb-4"
-                />
-              </label>
-              <label>
-                First Name:
-                <input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded mb-4"
-                />
-              </label>
-              <label>
-                Last Name:
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded mb-4"
-                />
-              </label>
-              <div className="flex justify-end">
-                <button
-                  className="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded mr-2"
-                  onClick={handleCreateEmployee}
-                >
-                  Create
-                </button>
-                <button
-                  className="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
-                  onClick={closeAddEmployeePopup}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <TablesByCategory userId={userId} userToken={userToken} employeeList={employeeList} />
+        <br />
       </div>
     </>
   );
