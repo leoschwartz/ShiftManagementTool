@@ -16,32 +16,31 @@ const TablesByCategory = ({ userId, userToken, employeeList }) => {
     const fetchCategories = async () => {
       const categories = await getCategories(userId, userToken);
       setCategoryList(categories);
-      for (let i = 0; i < employeeList.length; i++) {
-        const employeeDetails = await getUser(userToken, employeeList[i]);
-        setEmployeeListDetails((prevState) => [...prevState, employeeDetails]);
-      }
+      // for (let i = 0; i < employeeList.length; i++) {
+      //   const employeeDetails = await getUser(userToken, employeeList[i]);
+      //   setEmployeeListDetails((prevState) => [...prevState, employeeDetails]);
+      // }
+      const array = await Promise.all(employeeList.map(async (employee) => {
+        const employeeDetails = await getUser(userToken, employee);
+        return employeeDetails;
+      }));
+      setEmployeeListDetails(array);
       setLoading(false);
     };
     fetchCategories();
-  }, []);
+  }, [employeeList]);
 
   useEffect(() => {
     if (employeeListDetails) {
-      // setUndefinedCategoryEmployees(
-      //   employeeListDetails.filter(
-      //     (employee) => employee.accountInfo.category === -1
-      //   )
-      // );
-      setUndefinedCategoryEmployees(employee => {
-        const newArray = employeeListDetails.filter(
+      setUndefinedCategoryEmployees(
+        employeeListDetails.filter(
           (employee) => employee.accountInfo.category === -1
-        );
-        return [...newArray];
-      })
+        )
+      );
     } else {
       setUndefinedCategoryEmployees([]);
     }
-  }, [employeeListDetails.length]);
+  }, [employeeListDetails]);
 
   return (
     <>
