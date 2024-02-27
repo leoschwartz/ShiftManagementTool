@@ -1,5 +1,7 @@
 # Shift Management Tool
 
+- [Live domain](https://shift-management-tool.vercel.app)
+
 ## Server
 
 - [Live demo](https://calm-pear-crab-fez.cyclic.app/)
