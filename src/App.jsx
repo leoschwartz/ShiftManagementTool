@@ -12,6 +12,7 @@ import Unauthorize from "./routes/Unauthorize";
 import AuthorizationCheck from "./components/AuthorizationCheck";
 import AddNewUserPage from "./routes/AddNewUserPage";
 import EmployeeList from "./routes/EmployeeList";
+import AdminManagerAccountList from "./routes/AdminManagerAccountList";
 function App() {
   return (
     <>
@@ -28,6 +29,7 @@ function App() {
                 />
               }
             >
+              <Route path="/accountManager" element={<AdminManagerAccountList />} />
               <Route path="/addNewUser" element={<AddNewUserPage />}></Route>
             </Route>
             <Route

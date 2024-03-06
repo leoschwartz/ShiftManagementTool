@@ -9,6 +9,9 @@ export const addNewUser = async (userToken, email, password, userInfo) => {
     throw new Error("API_URL is not defined");
   }
   try {
+    console.log(email)
+    console.log(password)
+    console.log(userInfo)
     const res = await axios.post(
       apiUrl,
       {
