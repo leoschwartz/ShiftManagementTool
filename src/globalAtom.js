@@ -25,7 +25,7 @@ export const homeRedirectAtom = atom((get) => {
   } else if (accessLevel === 1) {
     return "/employeeList";
   } else if (accessLevel === 2) {
-    return "/addNewUser";
+    return "/accountManager";
   } else {
     return "/unauthorize";
   }

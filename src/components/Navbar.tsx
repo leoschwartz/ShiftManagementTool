@@ -20,7 +20,7 @@ function Navbar() {
       : accessLevel === 1
       ? "/employeeList"
       : accessLevel === 2
-      ? "/addNewUser"
+      ? "/accountManager"
       : "/unauthorize";
   const handleLogout = () => {
     setUserTokenAtom(null);
