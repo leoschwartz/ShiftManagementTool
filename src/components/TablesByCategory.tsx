@@ -20,10 +20,12 @@ const TablesByCategory = ({ userId, userToken, employeeList }) => {
       //   const employeeDetails = await getUser(userToken, employeeList[i]);
       //   setEmployeeListDetails((prevState) => [...prevState, employeeDetails]);
       // }
-      const array = await Promise.all(employeeList.map(async (employee) => {
-        const employeeDetails = await getUser(userToken, employee);
-        return employeeDetails;
-      }));
+      const array = await Promise.all(
+        employeeList.map(async (employee) => {
+          const employeeDetails = await getUser(userToken, employee);
+          return employeeDetails;
+        })
+      );
       setEmployeeListDetails(array);
       setLoading(false);
     };

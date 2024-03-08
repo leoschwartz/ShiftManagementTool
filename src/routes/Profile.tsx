@@ -107,14 +107,6 @@ const Profile = () => {
         <div className="blur-[106px] h-3/4 bg-gradient-to-r from-forth to-fifth opacity-30"></div>
       </div>
       <div className="flex flex-col items-center mt-16 px-8 lg:px-32 md:px-24 sm:px-16">
-        <div className="w-32 h-32 bg-gray-300 rounded-full overflow-hidden">
-          <img
-            className="w-full h-full object-cover"
-            src="http://placekitten.com/150/150"
-            alt="Profile"
-          />
-        </div>
-
         <div className="mt-4 text-center w-full">
           <div className="bg-white p-4 border border-primary rounded-lg">
             <ul className="text-left space-y-2">
