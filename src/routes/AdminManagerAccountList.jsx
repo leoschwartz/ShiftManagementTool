@@ -14,6 +14,7 @@ function AdminManagerAccountList() {
   const [managerList, setManagerList] = useState([]);
   const [adminList, setAdminList] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [ToastMessage, setToastMessage] = useState("");
@@ -23,8 +24,8 @@ function AdminManagerAccountList() {
   }, []);
 
   const handleEdit = (user) => {
-    setToastMessage("Edit user is not implemented yet");
-    setShowErrorToast(true);
+    setModalTitle("Edit " + user.email);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (user) => {
@@ -65,7 +66,13 @@ function AdminManagerAccountList() {
   return (
     <>
       <Theme2 />
-      <Modal />
+      <Modal
+        title={modalTitle}
+        isModalOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      >
+        Hello
+      </Modal>
       <section className="overflow-x-auto mx-2 sm:mx-6">
         <h1 className="text-3xl font-semibold tracking-wide my-4 text-primary">
           Account manager
