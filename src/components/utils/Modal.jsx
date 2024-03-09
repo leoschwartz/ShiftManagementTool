@@ -1,5 +1,12 @@
 import PropTypes from "prop-types";
 
+Modal.propTypes = {
+  children: PropTypes.node.isRequired,
+  title: PropTypes.string,
+  isModalOpen: PropTypes.bool,
+  onClose: PropTypes.func,
+};
+
 function Modal(props) {
   return (
     <div
@@ -41,10 +48,5 @@ function Modal(props) {
     </div>
   );
 }
-Modal.propTypes = {
-  children: PropTypes.node.isRequired,
-  title: PropTypes.string,
-  isModalOpen: PropTypes.bool,
-  onClose: PropTypes.func,
-};
+
 export default Modal;

@@ -3,7 +3,7 @@ import { getAllAdminsAndManagers } from "../api/getAllAdminsAndManagers";
 import { useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import { userTokenAtom } from "../globalAtom";
-import { Table } from "flowbite-react";
+import AdminAndManagerAccountTable from "../components/AdminAndManagerAccountTable";
 function AdminManagerAccountList() {
   const [userToken] = useAtom(userTokenAtom);
   const [managerList, setManagerList] = useState([]);
@@ -12,47 +12,61 @@ function AdminManagerAccountList() {
   useEffect(() => {
     const fetchData = async () => {
       const data = await getAllAdminsAndManagers(userToken);
-      console.log(data);
       if (data) {
+        data.managers.forEach((manager) => {
+          const milliseconds =
+            manager.createdOn.seconds * 1000 +
+            manager.createdOn.nanoseconds / 1000000;
+          manager.createdOn = new Date(milliseconds).toLocaleDateString();
+        });
+        data.admins.forEach((admin) => {
+          const milliseconds =
+            admin.createdOn.seconds * 1000 +
+            admin.createdOn.nanoseconds / 1000000;
+          admin.createdOn = new Date(milliseconds).toLocaleDateString();
+        });
         setManagerList(data.managers);
         setAdminList(data.admins);
+        console.log(data);
       }
     };
     fetchData();
   }, []);
+
+  const handleEdit = (user) => {
+    console.log("View details of user with id: ", id);
+  };
+
+  const handleDelete = (user) => {
+    // Show a confirmation dialog
+    const result = window.confirm("Do you want to delete " + user.email + "?");
+  };
+
   return (
     <>
       <Theme2 />
-      <section>
-        <Table hoverable>
-          <Table.Head>
-            <Table.HeadCell>Product name</Table.HeadCell>
-            <Table.HeadCell>Color</Table.HeadCell>
-            <Table.HeadCell>Category</Table.HeadCell>
-            <Table.HeadCell>Price</Table.HeadCell>
-            <Table.HeadCell>
-              <span className="sr-only">Edit</span>
-            </Table.HeadCell>
-          </Table.Head>
-          <Table.Body className="divide-y">
-            <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-              <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                {'Apple MacBook Pro 17"'}
-              </Table.Cell>
-              <Table.Cell>Sliver</Table.Cell>
-              <Table.Cell>Laptop</Table.Cell>
-              <Table.Cell>$2999</Table.Cell>
-              <Table.Cell>
-                <a
-                  href="#"
-                  className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
-                >
-                  Edit
-                </a>
-              </Table.Cell>
-            </Table.Row>
-          </Table.Body>
-        </Table>
+      <section className="overflow-x-auto mx-2 sm:mx-6">
+        <h1 className="text-3xl font-semibold tracking-wide my-4 text-primary">
+          Account manager
+        </h1>
+        <div>
+          <h2 className="text-2xl font-semibold text-secondary my-2">Admin</h2>
+          <AdminAndManagerAccountTable
+            userList={adminList}
+            handleEdit={handleEdit}
+            handleDelete={handleDelete}
+          />
+        </div>
+        <div>
+          <h2 className="text-2xl font-semibold text-secondary my-2">
+            Manager
+          </h2>
+          <AdminAndManagerAccountTable
+            userList={managerList}
+            handleEdit={handleEdit}
+            handleDelete={handleDelete}
+          />
+        </div>
       </section>
     </>
   );
