@@ -18,6 +18,7 @@ function AdminManagerAccountList() {
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [ToastMessage, setToastMessage] = useState("");
+  const [selectedUser, setSelectedUser] = useState({});
   // Get all admins and managers
   useEffect(() => {
     fetchData();
@@ -26,6 +27,7 @@ function AdminManagerAccountList() {
   const handleEdit = (user) => {
     setModalTitle("Edit " + user.email);
     setIsModalOpen(true);
+    setSelectedUser(user);
   };
 
   const handleDelete = async (user) => {
@@ -63,6 +65,11 @@ function AdminManagerAccountList() {
     }
   };
 
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    console.log("Form submitted");
+  };
+
   return (
     <>
       <Theme2 />
@@ -71,7 +78,56 @@ function AdminManagerAccountList() {
         isModalOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       >
-        Hello
+        <form
+          className="space-y-4 max-w-lg mx-auto my-3"
+          onSubmit={handleFormSubmit}
+        >
+          <div className="flex items-center justify-between">
+            <label
+              htmlFor="firstName"
+              className="mb-2 font-semibold text-primary"
+            >
+              First Name:
+            </label>
+            <input
+              type="text"
+              id="firstName"
+              value={selectedUser.firstName}
+              className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fifth ml-2 w-7/12 xs:w-3/4"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <label
+              htmlFor="lastName"
+              className="mb-2 font-semibold text-primary"
+            >
+              Last Name:
+            </label>
+            <input
+              type="text"
+              id="lastName"
+              value={selectedUser.lastName}
+              className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fifth ml-2 w-7/12 xs:w-3/4"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <label htmlFor="email" className="mb-2 font-semibold text-primary">
+              Email:
+            </label>
+            <input
+              type="text"
+              id="email"
+              value={selectedUser.email}
+              className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fifth ml-2 w-7/12 xs:w-3/4"
+            />
+          </div>
+          <button
+            type="submit"
+            className="font-medium bg-forth hover:bg-third text-white py-2 px-4 rounded float-end"
+          >
+            Update
+          </button>
+        </form>
       </Modal>
       <section className="overflow-x-auto mx-2 sm:mx-6">
         <h1 className="text-3xl font-semibold tracking-wide my-4 text-primary">
