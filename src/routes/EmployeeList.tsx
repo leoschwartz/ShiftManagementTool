@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAtom } from "jotai";
 import { userTokenAtom, userIdAtom } from "../globalAtom";
 import React from "react";
-import TablesByCategory from "../components/TablesByCategory";
+import EmployeeTablesByCategory from "../components/EmployeeTablesByCategory";
 import AddCategoryButton from "../components/AddCategoryButton";
 import AddEmployeeButton from "../components/AddEmployeeButton";
 
@@ -12,7 +12,7 @@ const EmployeeList = () => {
   const [userId] = useAtom(userIdAtom);
 
   useEffect(() => {
-    // Gets the manager employee list so it can be passed to the 
+    // Gets the manager employee list so it can be passed to the
     // TablesByCategory component
     const fetchEmployeeList = async () => {
       try {
@@ -57,7 +57,11 @@ const EmployeeList = () => {
           <AddCategoryButton userToken={userToken} />
           <AddEmployeeButton userToken={userToken} />
         </div>
-        <TablesByCategory userId={userId} userToken={userToken} employeeList={employeeList} />
+        <EmployeeTablesByCategory
+          userId={userId}
+          userToken={userToken}
+          employeeList={employeeList}
+        />
         <br />
       </div>
     </>

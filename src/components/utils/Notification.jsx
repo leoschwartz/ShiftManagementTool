@@ -1,5 +1,12 @@
 import PropTypes from "prop-types";
 
+Notification.propTypes = {
+  message: PropTypes.string.isRequired, // Add prop validation for 'message'
+  showCloseButton: PropTypes.bool.isRequired, // Add prop validation for 'showCloseButton'
+  onClose: PropTypes.func, // Add prop validation for 'onClose'
+  type: PropTypes.string, // Add prop validation for 'type'
+};
+
 function Notification(props) {
   return (
     <div
@@ -42,12 +49,5 @@ function Notification(props) {
     </div>
   );
 }
-
-Notification.propTypes = {
-  message: PropTypes.string.isRequired, // Add prop validation for 'message'
-  showCloseButton: PropTypes.bool.isRequired, // Add prop validation for 'showCloseButton'
-  onClose: PropTypes.func, // Add prop validation for 'onClose'
-  type: PropTypes.string, // Add prop validation for 'type'
-};
 
 export default Notification;

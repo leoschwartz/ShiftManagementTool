@@ -4,7 +4,7 @@ import { Table, Spinner } from "flowbite-react";
 import getCategories from "../api/getCategories";
 import { getUser } from "../api/getUser";
 
-const TablesByCategory = ({ userId, userToken, employeeList }) => {
+const EmployeeTablesByCategory = ({ userId, userToken, employeeList }) => {
   const [categoryList, setCategoryList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [employeeListDetails, setEmployeeListDetails] = useState<any[]>([]);
@@ -144,4 +144,4 @@ const TablesByCategory = ({ userId, userToken, employeeList }) => {
   );
 };
 
-export default TablesByCategory;
+export default EmployeeTablesByCategory;
