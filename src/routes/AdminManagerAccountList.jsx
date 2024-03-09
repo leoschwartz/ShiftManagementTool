@@ -5,17 +5,26 @@ import { useAtom } from "jotai";
 import { userTokenAtom } from "../globalAtom";
 import AdminAndManagerAccountTable from "../components/AdminAndManagerAccountTable";
 import { deleteUser } from "../api/deleteUser";
+import Modal from "../components/utils/Modal";
+import SuccessToast from "../components/utils/SuccessToast";
+import ErrorToast from "../components/utils/ErrorToast";
+
 function AdminManagerAccountList() {
   const [userToken] = useAtom(userTokenAtom);
   const [managerList, setManagerList] = useState([]);
   const [adminList, setAdminList] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [ToastMessage, setToastMessage] = useState("");
   // Get all admins and managers
   useEffect(() => {
     fetchData();
   }, []);
 
   const handleEdit = (user) => {
-    console.log("View details of user with id: ", id);
+    setToastMessage("Edit user is not implemented yet");
+    setShowErrorToast(true);
   };
 
   const handleDelete = async (user) => {
@@ -24,8 +33,11 @@ function AdminManagerAccountList() {
       const data = await deleteUser(userToken, user.id);
       if (data && data.status == "ok") {
         fetchData();
+        setShowSuccessToast(true);
+        setToastMessage("User deleted successfully");
       } else {
-        console.log("error");
+        setShowErrorToast(true);
+        setToastMessage("Failed to delete user");
       }
     }
   };
@@ -47,13 +59,13 @@ function AdminManagerAccountList() {
       });
       setManagerList(data.managers);
       setAdminList(data.admins);
-      console.log(data);
     }
   };
 
   return (
     <>
       <Theme2 />
+      <Modal />
       <section className="overflow-x-auto mx-2 sm:mx-6">
         <h1 className="text-3xl font-semibold tracking-wide my-4 text-primary">
           Account manager
@@ -77,6 +89,18 @@ function AdminManagerAccountList() {
           />
         </div>
       </section>
+      {showSuccessToast && (
+        <SuccessToast
+          message={ToastMessage}
+          onClose={() => setShowSuccessToast(false)}
+        />
+      )}
+      {showErrorToast && (
+        <ErrorToast
+          message={ToastMessage}
+          onClose={() => setShowErrorToast(false)}
+        />
+      )}
     </>
   );
 }
