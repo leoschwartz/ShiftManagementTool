@@ -9,6 +9,8 @@ import Modal from "../components/utils/Modal";
 import SuccessToast from "../components/utils/SuccessToast";
 import ErrorToast from "../components/utils/ErrorToast";
 import FormEditAdminAndManager from "../components/FormEditAdminAndManager";
+import { updateUser } from "../api/updateUser";
+import { verifyString } from "../utils/verifyString";
 
 function AdminManagerAccountList() {
   const [userToken] = useAtom(userTokenAtom);
@@ -66,12 +68,36 @@ function AdminManagerAccountList() {
     }
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     const firstName = e.target.firstName.value;
     const lastName = e.target.lastName.value;
-    const email = e.target.email.value;
-    console.log(firstName, lastName, email);
+    const updateDate = {};
+    if (verifyString(firstName)) {
+      updateDate.firstName = firstName;
+    }
+    if (verifyString(lastName)) {
+      updateDate.lastName = lastName;
+    }
+    try {
+      const data = await updateUser(userToken, selectedUser.id, {
+        firstName: firstName,
+        lastName: lastName,
+      });
+      if (data) {
+        await fetchData();
+        setShowSuccessToast(true);
+        setToastMessage("User updated successfully");
+      } else {
+        setShowErrorToast(true);
+        setToastMessage("Failed to update user");
+      }
+    } catch (error) {
+      setShowErrorToast(true);
+      setToastMessage("Failed to update user");
+    }
+    setIsModalOpen(false);
+    e.target.reset();
   };
 
   return (

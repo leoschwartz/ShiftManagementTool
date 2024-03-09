@@ -33,17 +33,6 @@ function FormEditAdminAndManager(props) {
           className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fifth ml-2 w-7/12 xs:w-3/4"
         />
       </div>
-      <div className="flex items-center justify-between">
-        <label htmlFor="email" className="mb-2 font-semibold text-primary">
-          Email:
-        </label>
-        <input
-          type="text"
-          id="email"
-          placeholder={props.user.email}
-          className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fifth ml-2 w-7/12 xs:w-3/4"
-        />
-      </div>
       <button
         type="submit"
         className="font-medium bg-forth hover:bg-third text-white py-2 px-4 rounded float-end"
