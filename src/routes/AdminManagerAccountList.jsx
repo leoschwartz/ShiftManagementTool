@@ -4,32 +4,13 @@ import { useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import { userTokenAtom } from "../globalAtom";
 import AdminAndManagerAccountTable from "../components/AdminAndManagerAccountTable";
+import { deleteUser } from "../api/deleteUser";
 function AdminManagerAccountList() {
   const [userToken] = useAtom(userTokenAtom);
   const [managerList, setManagerList] = useState([]);
   const [adminList, setAdminList] = useState([]);
   // Get all admins and managers
   useEffect(() => {
-    const fetchData = async () => {
-      const data = await getAllAdminsAndManagers(userToken);
-      if (data) {
-        data.managers.forEach((manager) => {
-          const milliseconds =
-            manager.createdOn.seconds * 1000 +
-            manager.createdOn.nanoseconds / 1000000;
-          manager.createdOn = new Date(milliseconds).toLocaleDateString();
-        });
-        data.admins.forEach((admin) => {
-          const milliseconds =
-            admin.createdOn.seconds * 1000 +
-            admin.createdOn.nanoseconds / 1000000;
-          admin.createdOn = new Date(milliseconds).toLocaleDateString();
-        });
-        setManagerList(data.managers);
-        setAdminList(data.admins);
-        console.log(data);
-      }
-    };
     fetchData();
   }, []);
 
@@ -37,9 +18,37 @@ function AdminManagerAccountList() {
     console.log("View details of user with id: ", id);
   };
 
-  const handleDelete = (user) => {
-    // Show a confirmation dialog
+  const handleDelete = async (user) => {
     const result = window.confirm("Do you want to delete " + user.email + "?");
+    if (result) {
+      const data = await deleteUser(userToken, user.id);
+      if (data && data.status == "ok") {
+        fetchData();
+      } else {
+        console.log("error");
+      }
+    }
+  };
+
+  const fetchData = async () => {
+    const data = await getAllAdminsAndManagers(userToken);
+    if (data) {
+      data.managers.forEach((manager) => {
+        const milliseconds =
+          manager.createdOn.seconds * 1000 +
+          manager.createdOn.nanoseconds / 1000000;
+        manager.createdOn = new Date(milliseconds).toLocaleDateString();
+      });
+      data.admins.forEach((admin) => {
+        const milliseconds =
+          admin.createdOn.seconds * 1000 +
+          admin.createdOn.nanoseconds / 1000000;
+        admin.createdOn = new Date(milliseconds).toLocaleDateString();
+      });
+      setManagerList(data.managers);
+      setAdminList(data.admins);
+      console.log(data);
+    }
   };
 
   return (
