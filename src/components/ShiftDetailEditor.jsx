@@ -23,6 +23,7 @@ function ShiftDetailEditor(props) {
         {props.shift?.allDay ? (
           <p className="mb-2">All day: {shift.allDay}</p>
         ) : (
+          //todo time editing
           <>
             <p className="mb-2">
               Start Time: {dateToHourMinute(shift.startTime)}
