@@ -40,7 +40,7 @@ function Schedule({ employeeId }) {
   const [currentEvents, setCurrentEvents] = useState([]); //Shifts that are directly updated to display
   const [currentEventsKey, setCurrentEventsKey] = useState(0); //Change to update display
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [dataSource, setDataSource] = useState([]);
+  const [dataSource, setDataSource] = useState(()=>{return ()=>{return []}}); //wtf
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isScheduleExist, setIsScheduleExist] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -49,14 +49,15 @@ function Schedule({ employeeId }) {
   const [addedShifts, setAddedShifts] = useState([]); //Array of new shifts
   const [error, setError] = useState("");
   const [modalKey, setModalKey] = useState(0); //Change to force update modal
-  const [calendarRangeStart, setCalendarRangeStart] = useState(0);
-  const [calendarRangeEnd, setCalendarRangeEnd] = useState(0);
+
+  const calendarRangeStart = useRef(0);
+  const calendarRangeEnd = useRef(0);
 
   let schedule = useRef(null);
   let scheduleCache = useRef([]); // for dealing with large shift movement
   let currentUser = useRef(null);
   let calendarRef = useRef(null);
-  
+
   // Helper - append or updates an item in a state array
   const setStateItem = (item, state, setState) => {
     const items = state;
@@ -93,10 +94,19 @@ function Schedule({ employeeId }) {
 
   // Convert the currentEvents to a dataSource that is compatible with the FullCalendar to allow rendering
   useEffect(() => {
-    const newDataSource = (fetchInfo) => {
-      console.log(fetchInfo); //why is this an empty array?
-      //todo invalidate datasource if calendarRange changes
-      return currentEvents.map((event) => {
+    const newDataSource = async (fetchInfo) => {
+      if (calendarRangeStart.current && calendarRangeEnd.current) {
+        if (fetchInfo.start.getTime() != calendarRangeStart.current.getTime() || fetchInfo.end.getTime() != calendarRangeEnd.current.getTime()) {
+          calendarRangeStart.current = fetchInfo.start;
+          calendarRangeEnd.current = fetchInfo.end;
+          await fetchCurrentShifts(false); //Refresh currentEvents if calendar range changes & skip calendar update (we do that here)
+        }
+      } else {
+        //initial run
+        calendarRangeStart.current = fetchInfo.start;
+        calendarRangeEnd.current = fetchInfo.end;
+      }
+      const ev = currentEvents.map((event) => {
         return {
           id: event.id,
           title: event.name,
@@ -105,12 +115,14 @@ function Schedule({ employeeId }) {
           allDay: event.allDay,
         };
       });
+      return ev;
     }
-    setDataSource(newDataSource);
-  }, [currentEvents, currentEventsKey]);
+    setDataSource(() => newDataSource);
+    //calendarRef.current.getApi().refetchEvents();
+  }, [currentEventsKey]);
 
   // Fetch and update Schedule and CurrentEvents objects
-  const fetchCurrentShifts = async () => {
+  const fetchCurrentShifts = async (doUpdateDataSource = true) => {
     try {
     const currentDate = new Date();
       const res = await getSchedule(
@@ -144,7 +156,8 @@ function Schedule({ employeeId }) {
           }
         }
         setCurrentEvents(shifts);
-        setCurrentEventsKey(currentEventsKey + 1);
+        if (doUpdateDataSource)
+          setCurrentEventsKey(currentEventsKey + 1);
         setIsScheduleExist(true);
       }
     } catch (error) {
@@ -156,8 +169,8 @@ function Schedule({ employeeId }) {
   const handleDateSelect = (selectInfo) => {
     setSelectedEvent({
       id: null,
-      startTime: selectInfo.startStr,
-      endTime: selectInfo.endStr,
+      startTime: selectInfo.start,
+      endTime: selectInfo.end,
       allDay: selectInfo.allDay,
       employeeId: employeeId,
       createdBy: currentUser.current,
@@ -181,6 +194,11 @@ function Schedule({ employeeId }) {
 
   // Handle when a change is saved to a shift
   const submitFormHandler = (shift) => {
+    const oldShift = currentEvents.find((event) => event.id === shift.id);
+    if (oldShift) {
+      if (oldShift.startTime.getTime() != shift.startTime.getTime() || oldShift.endTime.getTime() != shift.endTime.getTime())
+        shift.parentSchedule = null; //may have been moved too far, let save function handle it
+    }
     if (shift.id == null) {
       // Saving new shift
       shift.id = uuid();
@@ -229,9 +247,8 @@ function Schedule({ employeeId }) {
   // PROBLEM - ASSUMES SHIFTS CANNOT BE IN MULTIPLE SCHEDULE TIME FRAMES - USES START TIME INSTEAD
   const checkScheduleBounds = async (shift) => {
     // Push saved schedule
-    if (scheduleCache.current.findIndex((i) => {return i.id == schedule.id}) == -1)
-      scheduleCache.current.push(schedule);
-
+    if (scheduleCache.current.findIndex((i) => {return i.id == schedule.current.id}) == -1)
+      scheduleCache.current.push(schedule.current);
     // Check current schedule if it has one
     if (shift.parentSchedule != null) {
       var pos = scheduleCache.current.findIndex((i) => {return i.id == shift.parentSchedule});
@@ -355,10 +372,6 @@ function Schedule({ employeeId }) {
   const resetSchedule = async () => {
     try {
       if (isScheduleExist) {
-        const deletedShifts = schedule.current.shiftIdList;
-        for (let i = 0; i < deletedShifts.length; i++) {
-          await deleteShift(userToken, deletedShifts[i]);
-        }
         setDeletedShiftIds([]);
         setEditedShifts([]);
         setAddedShifts([]);
@@ -367,6 +380,7 @@ function Schedule({ employeeId }) {
       }
       setCurrentEvents([]);
       setCurrentEventsKey(currentEventsKey + 1);
+      fetchCurrentShifts();
     } catch (error) {
       setError(error.message);
     }
@@ -402,6 +416,7 @@ function Schedule({ employeeId }) {
           eventContent={renderEventContent}
           eventClick={handleEventClick}
           eventDrop={handleEventDrop}
+          eventResize={handleEventDrop}
           ref={calendarRef}
         />
         {isSaved && (
