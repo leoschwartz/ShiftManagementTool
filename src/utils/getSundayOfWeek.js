@@ -10,5 +10,10 @@ function getSundayOfWeek() {
     return new Date(today.setDate(diff)); // Set the date to the previous Sunday and return it
   }
 }
+function addDays(date, days) {
+    var result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+}
 
-export { getSundayOfWeek };
+export { getSundayOfWeek, addDays };

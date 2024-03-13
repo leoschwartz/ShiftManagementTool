@@ -16,7 +16,7 @@ import PropTypes from "prop-types";
 import { createShift } from "../api/createShift";
 import { updateShift } from "../api/updateShift";
 import { updateSchedule } from "../api/updateSchedule";
-//import { getSundayOfWeek } from "../utils/getSundayOfWeek";
+import { addDays } from "../utils/getSundayOfWeek";
 //import { getCurrentUser } from "../api/getCurrentUser";
 import { deleteShift } from "../api/deleteShift";
 import Notification from "./utils/Notification";
@@ -64,7 +64,7 @@ function Schedule({ employeeId }) {
   const setStateItem = (item, state, setState) => {
     const items = state;
     const pos = items.findIndex((i) => {return i.id == item.id});
-    if (pos == -1 && item.id != undefined)
+    if (pos == -1)
       items.push(item);
     else
       items[pos] = item;
@@ -128,7 +128,7 @@ function Schedule({ employeeId }) {
       const res = await getSchedule(
         userToken,
         employeeId,
-        currentDate.toISOString()
+        addDays(currentDate,1).toISOString() //hack! timezone issue in backend
       );
       if (res) {
         const startDate = new Date(res.startTime);
@@ -226,8 +226,12 @@ function Schedule({ employeeId }) {
 
   // Handle when a deletion is saved
   const deleteFormHandler = (shift) => {
-    if (!stateContains(shift, addedShifts))
+    console.log(shift);
+    if (!stateContains(shift, addedShifts)) {
+      console.log("Logging");
       setStateItem(shift.id, deletedShiftIds, setDeletedShiftIds);
+      console.log(deletedShiftIds);
+    }
     deleteStateItem(shift, addedShifts, setAddedShifts);
     deleteStateItem(shift, editedShifts, setEditedShifts);
     const pos = currentEvents.current.findIndex((i) => {return i.id == shift.id});
