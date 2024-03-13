@@ -1,12 +1,19 @@
+import { useState } from "react";
+import Notification from "./utils/Notification";
 import Modal from "./utils/Modal";
 import PropTypes from "prop-types";
 import { dateToHourMinute } from "../utils/dateToHourMinute";
 function ShiftDetailEditor(props) {
+  const [error, setError] = useState("");
   var shift = props.shift;
   if (!shift) return;
   function onSubmit(event) {
     event.preventDefault();
-    props.onSubmit(shift);
+    if (shift.startTime && shift.endTime && shift.startTime < shift.endTime)
+      props.onSubmit(shift);
+    else {
+      setError("Invalid time range!");
+    }
   }
   function onDelete(event) {
     event.preventDefault();
@@ -23,13 +30,18 @@ function ShiftDetailEditor(props) {
         {props.shift?.allDay ? (
           <p className="mb-2">All day: {shift.allDay}</p>
         ) : (
-          //todo time editing
           <>
             <p className="mb-2">
-              Start Time: {dateToHourMinute(shift.startTime)}
+              Start Time: <input type="time" defaultValue={dateToHourMinute(shift.startTime)} onChange={(e) => {
+                  shift.startTime.setHours(e.target.value.substring(0,2));
+                  shift.startTime.setMinutes(e.target.value.substring(3,5));
+              }}/>
             </p>
             <p className="mb-2">
-              End Time: {dateToHourMinute(shift.endTime)}
+              End Time: <input type="time" defaultValue={dateToHourMinute(shift.endTime)} onChange={(e) => {
+                  shift.endTime.setHours(e.target.value.substring(0,2));
+                  shift.endTime.setMinutes(e.target.value.substring(3,5));
+              }}/>
             </p>
           </>
         )}
@@ -80,7 +92,7 @@ function ShiftDetailEditor(props) {
             type="text"
             name="location"
             defaultValue={shift.location}
-            onChange={(e) => {shift.desc = e.target.value}}
+            onChange={(e) => {shift.location = e.target.value}}
           />
         </div>
         <input
@@ -95,6 +107,14 @@ function ShiftDetailEditor(props) {
           Delete shift
         </button>
       </form>
+      {error !== "" && (
+          <Notification
+            message={error}
+            showCloseButton={true}
+            onClose={() => setError("")}
+            type="error"
+          />
+        )}
     </Modal>
   );
 }

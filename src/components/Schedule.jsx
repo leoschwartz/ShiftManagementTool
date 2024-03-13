@@ -10,13 +10,12 @@ import { getScheduleById } from "../api/getScheduleById"
 import { useAtom } from "jotai";
 import { userTokenAtom, userAccessLevelAtom } from "../globalAtom";
 import { getShifts } from "../api/getShifts";
-//import { createSchedule } from "../api/createSchedule";
 import PropTypes from "prop-types";
 import { createShift } from "../api/createShift";
 import { updateShift } from "../api/updateShift";
 import { updateSchedule } from "../api/updateSchedule";
 import { addDays } from "../utils/getSundayOfWeek";
-//import { getCurrentUser } from "../api/getCurrentUser";
+import { getCurrentUser } from "../api/getCurrentUser";
 import { deleteShift } from "../api/deleteShift";
 import Notification from "./utils/Notification";
 import ShiftDetail from "./ShiftDetail";
@@ -86,6 +85,9 @@ function Schedule({ employeeId }) {
 
   // Initialization
   useEffect(() => {
+    getCurrentUser(userToken).then((res) => {
+      currentUser.current = res;
+    });
     fetchCurrentShifts().then(() => {
       if (calendarRef.current) {
         const calendarApi = calendarRef.current.getApi(); // Get the FullCalendar API
@@ -178,7 +180,7 @@ function Schedule({ employeeId }) {
         endTime: selectInfo.end,
         allDay: selectInfo.allDay,
         employeeId: employeeId,
-        createdBy: currentUser.current, //TODO - this isn't working!
+        createdBy: currentUser.current.id,
         parentSchedule: schedule.current.id,
         name: "",
         desc: "",
@@ -232,11 +234,8 @@ function Schedule({ employeeId }) {
 
   // Handle when a deletion is saved
   const deleteFormHandler = (shift) => {
-    console.log(shift);
     if (!stateContains(shift, addedShifts)) {
-      console.log("Logging");
       setStateItem(shift.id, deletedShiftIds, setDeletedShiftIds);
-      console.log(deletedShiftIds);
     }
     deleteStateItem(shift, addedShifts, setAddedShifts);
     deleteStateItem(shift, editedShifts, setEditedShifts);
