@@ -7,7 +7,7 @@ export const updateShift = async (userToken, shiftData) => {
   }
   try {
     const res = await axios({
-      method: "post",
+      method: "put",
       url: apiUrl,
       headers: {
         Authorization: "Bearer " + userToken,
