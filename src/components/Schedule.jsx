@@ -11,11 +11,12 @@ import { getScheduleById } from "../api/getScheduleById"
 import { useAtom } from "jotai";
 import { userTokenAtom, userAccessLevelAtom } from "../globalAtom";
 import { getShifts } from "../api/getShifts";
-import { createSchedule } from "../api/createSchedule";
+//import { createSchedule } from "../api/createSchedule";
 import PropTypes from "prop-types";
 import { createShift } from "../api/createShift";
+import { updateShift } from "../api/updateShift";
 import { updateSchedule } from "../api/updateSchedule";
-import { getSundayOfWeek } from "../utils/getSundayOfWeek";
+//import { getSundayOfWeek } from "../utils/getSundayOfWeek";
 //import { getCurrentUser } from "../api/getCurrentUser";
 import { deleteShift } from "../api/deleteShift";
 import Notification from "./utils/Notification";
@@ -37,7 +38,7 @@ function renderEventContent(eventInfo) {
 function Schedule({ employeeId }) {
   const [userToken] = useAtom(userTokenAtom);
   const [userAccessLevel] = useAtom(userAccessLevelAtom);
-  const [currentEvents, setCurrentEvents] = useState([]); //Shifts that are directly updated to display
+  //const [currentEvents, setCurrentEvents] = useState([]); //Shifts that are directly updated to display
   const [currentEventsKey, setCurrentEventsKey] = useState(0); //Change to update display
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [dataSource, setDataSource] = useState(()=>{return ()=>{return []}}); //wtf
@@ -53,6 +54,7 @@ function Schedule({ employeeId }) {
   const calendarRangeStart = useRef(0);
   const calendarRangeEnd = useRef(0);
 
+  let currentEvents = useRef([]); //Shifts that are directly updated to display
   let schedule = useRef(null);
   let scheduleCache = useRef([]); // for dealing with large shift movement
   let currentUser = useRef(null);
@@ -99,14 +101,14 @@ function Schedule({ employeeId }) {
         if (fetchInfo.start.getTime() != calendarRangeStart.current.getTime() || fetchInfo.end.getTime() != calendarRangeEnd.current.getTime()) {
           calendarRangeStart.current = fetchInfo.start;
           calendarRangeEnd.current = fetchInfo.end;
-          await fetchCurrentShifts(false); //Refresh currentEvents if calendar range changes & skip calendar update (we do that here)
+          await fetchCurrentShifts(calendarRangeStart.current, false); //Refresh currentEvents if calendar range changes & skip calendar update (we do that here)
         }
       } else {
         //initial run
         calendarRangeStart.current = fetchInfo.start;
         calendarRangeEnd.current = fetchInfo.end;
       }
-      const ev = currentEvents.map((event) => {
+      const ev = currentEvents.current.map((event) => {
         return {
           id: event.id,
           title: event.name,
@@ -118,13 +120,11 @@ function Schedule({ employeeId }) {
       return ev;
     }
     setDataSource(() => newDataSource);
-    //calendarRef.current.getApi().refetchEvents();
   }, [currentEventsKey]);
 
   // Fetch and update Schedule and CurrentEvents objects
-  const fetchCurrentShifts = async (doUpdateDataSource = true) => {
+  const fetchCurrentShifts = async (currentDate = new Date(), doUpdateDataSource = true) => {
     try {
-    const currentDate = new Date();
       const res = await getSchedule(
         userToken,
         employeeId,
@@ -155,10 +155,13 @@ function Schedule({ employeeId }) {
               shifts[i] = editedShifts[pos];
           }
         }
-        setCurrentEvents(shifts);
+        currentEvents.current = shifts;
         if (doUpdateDataSource)
           setCurrentEventsKey(currentEventsKey + 1);
         setIsScheduleExist(true);
+      } else {
+        schedule.current = {id: null};
+        currentEvents.current = [];
       }
     } catch (error) {
       setError(error.message);
@@ -186,7 +189,7 @@ function Schedule({ employeeId }) {
   // Open an existing shift
   const handleEventClick = (clickInfo) => {
     const eventId = clickInfo.event.id;
-    const event = currentEvents.find((event) => event.id === eventId);
+    const event = currentEvents.current.find((event) => event.id === eventId);
     setSelectedEvent(event);
     setModalKey(modalKey + 1);
     setIsFormModalOpen(true);
@@ -194,7 +197,7 @@ function Schedule({ employeeId }) {
 
   // Handle when a change is saved to a shift
   const submitFormHandler = (shift) => {
-    const oldShift = currentEvents.find((event) => event.id === shift.id);
+    const oldShift = currentEvents.current.find((event) => event.id === shift.id);
     if (oldShift) {
       if (oldShift.startTime.getTime() != shift.startTime.getTime() || oldShift.endTime.getTime() != shift.endTime.getTime())
         shift.parentSchedule = null; //may have been moved too far, let save function handle it
@@ -211,7 +214,12 @@ function Schedule({ employeeId }) {
       else
         setStateItem(shift, editedShifts, setEditedShifts);
     }
-    setStateItem(shift,currentEvents, setCurrentEvents);
+    const pos = currentEvents.current.findIndex((i) => {return i.id == shift.id});
+    if (pos != -1)
+      currentEvents.current[pos] = shift;
+    else
+      currentEvents.current.push(shift);
+    //setStateItem(shift,currentEvents, setCurrentEvents);
     setCurrentEventsKey(currentEventsKey + 1);
     setIsFormModalOpen(false);
   };
@@ -222,14 +230,16 @@ function Schedule({ employeeId }) {
       setStateItem(shift.id, deletedShiftIds, setDeletedShiftIds);
     deleteStateItem(shift, addedShifts, setAddedShifts);
     deleteStateItem(shift, editedShifts, setEditedShifts);
-    deleteStateItem(shift, currentEvents, setCurrentEvents);
+    const pos = currentEvents.current.findIndex((i) => {return i.id == shift.id});
+    if (pos != -1)
+      currentEvents.current.splice(pos,1);
     setCurrentEventsKey(currentEventsKey + 1);
     setIsFormModalOpen(false);
   }
 
   // Handle when an event is moved/resized
   const handleEventDrop = (eventDropInfo) => {
-    const shift = currentEvents.find((event) => event.id == eventDropInfo.event.id);
+    const shift = currentEvents.current.find((event) => event.id == eventDropInfo.event.id);
     shift.startTime = eventDropInfo.event.start;
     shift.endTime = eventDropInfo.event.end;
     shift.allDay = eventDropInfo.event.allDay;
@@ -286,86 +296,26 @@ function Schedule({ employeeId }) {
   }
 
   // Send changes to backend
-  //This whole thing doesn't work. What if some shifts have schedules and some don't?
-  //TODO - full rewrite
-  //Each shift needs to be checked for a schedule, if one is missing, generate new one then try to apply it to other shifts
-  //Add new schedules to cache!!!!! Then u can use checkScheduleBounds!
-  const saveNewSchedule = async () => {
-    let res = null;
-    try {
-      // if the schedule already exists, update it
-      if (isScheduleExist) {
-        { // Deleted shifts
-          if (deletedShiftIds.length > 0) {
-            for (let i = 0; i < deletedShiftIds.length; i++) {
-              await deleteShift(userToken, deletedShiftIds[i]);
-            }
-            // update the schedule
-            if (deletedShiftIds.length > 1) {
-              res = await updateSchedule(userToken, schedule.current.id, {
-                removeMultipleShifts: deletedShiftIds,
-              });
-            } else if (deletedShiftIds.length === 1) {
-              res = await updateSchedule(userToken, schedule.current.id, {
-                removeShift: deletedShiftIds[0],
-              });
-            }
-            setDeletedShiftIds([]);
-          }
-        }
-        { // New shifts
-          // Create a new instance for each shift
-          for (let i = 0; i < addedShifts.length; i++) {
-            await createShift(userToken, addedShifts[i]);
-          }
-
-          // update the schedule
-          if (addedShifts.length > 1) {
-            res = await updateSchedule(userToken, schedule.current.id, {
-              addMultipleShifts: addedShifts.map((shift) => shift.id),
-            });
-          } else if (addedShifts.length === 1) {
-            res = await updateSchedule(userToken, schedule.current.id, {
-              addShift: addedShifts[0].id,
-            });
-          }
-          setAddedShifts([]);
-        }
-        { // Edited shifts
-          //do rewrite instead
-          setEditedShifts([]);
-        }
-      }
-      // Create new schedule
-      else {
-        if (deletedShiftIds.length > 0 || editedShifts.length > 0)
-          throw "Shifts were deleted or edited without a schedule!"; //Needs more thought.. shouldn't happen?
-        res = await createSchedule(userToken, {
-          shiftIdList: addedShifts.map((event) => event.id),
-          startTime: getSundayOfWeek(),
-          employeeId: employeeId,
-        });
-        const scheduleId = res.id;
-        schedule.current = res.schedule;
-        setIsScheduleExist(true);
-        const shifts = addedShifts.map((event) => {
-          return {
-            ...event,
-            parentSchedule: scheduleId,
-          };
-        });
-        for (let i = 0; i < shifts.length; i++) {
-          await createShift(userToken, shifts[i]);
-        }
-      }
-      if (res) {
-        setIsSaved(true);
-        setAddedShifts([]);
-        schedule.current = res;
-      }
-    } catch (error) {
-      setError(error.message);
+  const saveNewSchedule = async() => { 
+    //parentSchedule may be null at this point, but that will be handled by the server.
+    if (schedule.current.id) {
+      await updateSchedule(userToken, schedule.current.id, {
+        addMultipleShifts: addedShifts.map((shift) => shift.id),
+        removeMultipleShifts: deletedShiftIds,
+      });
     }
+    
+    for (const shift of addedShifts)
+      await createShift(userToken, shift);
+    setAddedShifts([]);
+    for (const shiftId of deletedShiftIds)
+      await deleteShift(userToken, shiftId);
+    setDeletedShiftIds([]);
+    for (const shift of editedShifts)
+      await updateShift(userToken, shift);
+    setEditedShifts([]);
+    setIsSaved(true);
+
   };
 
   // Reset all queued changes
@@ -378,7 +328,7 @@ function Schedule({ employeeId }) {
         schedule.current = null;
         setIsScheduleExist(false);
       }
-      setCurrentEvents([]);
+      currentEvents.current = [];
       setCurrentEventsKey(currentEventsKey + 1);
       fetchCurrentShifts();
     } catch (error) {

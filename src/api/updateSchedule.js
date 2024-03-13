@@ -12,7 +12,6 @@ import axios from "axios";
 
 export const updateSchedule = async (userToken, employeeId, updateData) => {
   const apiUrl = import.meta.env.VITE_API_URL + "/schedule/update";
-  console.log(updateData);
   if (!apiUrl) {
     throw new Error("API_URL is not defined");
   }

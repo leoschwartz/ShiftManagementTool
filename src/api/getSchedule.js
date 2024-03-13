@@ -18,8 +18,10 @@ export const getSchedule = async (userToken, employeeId, date) => {
         },
       }
     );
-    res.data.startTime = new Date(res.data.startTime);
-    res.data.endTime = new Date(res.data.endTime);
+    if (res.data) {
+      res.data.startTime = new Date(res.data.startTime);
+      res.data.endTime = new Date(res.data.endTime);
+    }
     return res.data;
   } catch (error) {
     console.log(error);
