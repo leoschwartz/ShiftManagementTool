@@ -55,6 +55,7 @@ function Schedule({ employeeId }) {
   const calendarRangeEnd = useRef(0);
 
   let currentEvents = useRef([]); //Shifts that are directly updated to display
+  let isInitialized = useRef(false);
   let schedule = useRef(null);
   let scheduleCache = useRef([]); // for dealing with large shift movement
   let currentUser = useRef(null);
@@ -83,46 +84,51 @@ function Schedule({ employeeId }) {
     return state.includes(item) || state.findIndex((s) => {s.id == item.id}) != -1;
   }
 
-  // Initialization
+  // Initialization and dataSource conversion
   useEffect(() => {
-    getCurrentUser(userToken).then((res) => {
-      currentUser.current = res;
-    });
-    fetchCurrentShifts().then(() => {
-      if (calendarRef.current) {
-        const calendarApi = calendarRef.current.getApi(); // Get the FullCalendar API
-        calendarApi.removeAllEvents(); // Remove all existing events
-        calendarApi.addEventSource(dataSource); // Add new events to the calendar
-      }
-    });
-  }, []);
+    // Initialization needs to *finish* before dataSource conversion, 
+    // so the whole useEffect is wrapped in an async function so that we can use await
+    const body = async () => {
 
-  // Convert the currentEvents to a dataSource that is compatible with the FullCalendar to allow rendering
-  useEffect(() => {
-    const newDataSource = async (fetchInfo) => {
-      if (calendarRangeStart.current && calendarRangeEnd.current) {
-        if (fetchInfo.start.getTime() != calendarRangeStart.current.getTime() || fetchInfo.end.getTime() != calendarRangeEnd.current.getTime()) {
+      //Initialization
+      if (!isInitialized.current) {
+        currentUser.current = await getCurrentUser(userToken);
+        await fetchCurrentShifts();
+        if (calendarRef.current) {
+          const calendarApi = calendarRef.current.getApi(); // Get the FullCalendar API
+          calendarApi.removeAllEvents(); // Remove all existing events
+          calendarApi.addEventSource(dataSource); // Add new events to the calendar
+        }
+        isInitialized.current = true;
+      }
+
+      // Convert the currentEvents to a dataSource that is compatible with the FullCalendar to allow rendering
+      const newDataSource = async (fetchInfo) => {
+        if (calendarRangeStart.current && calendarRangeEnd.current) {
+          if (fetchInfo.start.getTime() != calendarRangeStart.current.getTime() || fetchInfo.end.getTime() != calendarRangeEnd.current.getTime()) {
+            calendarRangeStart.current = fetchInfo.start;
+            calendarRangeEnd.current = fetchInfo.end;
+            await fetchCurrentShifts(calendarRangeStart.current, false); //Refresh currentEvents if calendar range changes & skip calendar update (we do that here)
+          }
+        } else {
+          //initial run
           calendarRangeStart.current = fetchInfo.start;
           calendarRangeEnd.current = fetchInfo.end;
-          await fetchCurrentShifts(calendarRangeStart.current, false); //Refresh currentEvents if calendar range changes & skip calendar update (we do that here)
         }
-      } else {
-        //initial run
-        calendarRangeStart.current = fetchInfo.start;
-        calendarRangeEnd.current = fetchInfo.end;
+        const ev = currentEvents.current.map((event) => {
+          return {
+            id: event.id,
+            title: event.name,
+            start: event.startTime,
+            end: event.endTime,
+            allDay: event.allDay,
+          };
+        });
+        return ev;
       }
-      const ev = currentEvents.current.map((event) => {
-        return {
-          id: event.id,
-          title: event.name,
-          start: event.startTime,
-          end: event.endTime,
-          allDay: event.allDay,
-        };
-      });
-      return ev;
+      setDataSource(() => newDataSource);
     }
-    setDataSource(() => newDataSource);
+    body();
   }, [currentEventsKey]);
 
   // Fetch and update Schedule and CurrentEvents objects
