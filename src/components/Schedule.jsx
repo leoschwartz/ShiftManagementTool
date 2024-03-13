@@ -5,7 +5,6 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { v4 as uuid } from "uuid";
 import Theme1 from "./theme/Theme1";
-import ShiftDetailEditor from "./ShiftDetailEditor";
 import { getSchedule } from "../api/getSchedule";
 import { getScheduleById } from "../api/getScheduleById"
 import { useAtom } from "jotai";
@@ -20,7 +19,8 @@ import { addDays } from "../utils/getSundayOfWeek";
 //import { getCurrentUser } from "../api/getCurrentUser";
 import { deleteShift } from "../api/deleteShift";
 import Notification from "./utils/Notification";
-//import ShiftDetail from "./ShiftDetail";
+import ShiftDetail from "./ShiftDetail";
+import ShiftDetailEditor from "./ShiftDetailEditor";
 
 function renderEventContent(eventInfo) {
   let desc = eventInfo.event.extendedProps.desc;
@@ -41,6 +41,7 @@ function Schedule({ employeeId }) {
   //const [currentEvents, setCurrentEvents] = useState([]); //Shifts that are directly updated to display
   const [currentEventsKey, setCurrentEventsKey] = useState(0); //Change to update display
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [dataSource, setDataSource] = useState(()=>{return ()=>{return []}}); //wtf
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isScheduleExist, setIsScheduleExist] = useState(false);
@@ -170,20 +171,22 @@ function Schedule({ employeeId }) {
 
   // Open a new shift
   const handleDateSelect = (selectInfo) => {
-    setSelectedEvent({
-      id: null,
-      startTime: selectInfo.start,
-      endTime: selectInfo.end,
-      allDay: selectInfo.allDay,
-      employeeId: employeeId,
-      createdBy: currentUser.current,
-      parentSchedule: schedule.current.id,
-      name: "",
-      desc: "",
-      location: "",
-    });
-    setModalKey(modalKey + 1);
-    setIsFormModalOpen(true);
+    if (userAccessLevel == 1 ? true : false) {
+      setSelectedEvent({
+        id: null,
+        startTime: selectInfo.start,
+        endTime: selectInfo.end,
+        allDay: selectInfo.allDay,
+        employeeId: employeeId,
+        createdBy: currentUser.current, //TODO - this isn't working!
+        parentSchedule: schedule.current.id,
+        name: "",
+        desc: "",
+        location: "",
+      });
+      setModalKey(modalKey + 1);
+      setIsFormModalOpen(true);
+    }
   };
 
   // Open an existing shift
@@ -192,7 +195,10 @@ function Schedule({ employeeId }) {
     const event = currentEvents.current.find((event) => event.id === eventId);
     setSelectedEvent(event);
     setModalKey(modalKey + 1);
-    setIsFormModalOpen(true);
+    if (userAccessLevel == 1 ? true : false)
+      setIsFormModalOpen(true);
+    else
+      setIsViewModalOpen(true);
   };
 
   // Handle when a change is saved to a shift
@@ -342,13 +348,19 @@ function Schedule({ employeeId }) {
 
   return (
     <>
+      <ShiftDetail
+        shift={selectedEvent}
+        isModalOpen={isViewModalOpen}
+        closeModal={() => setIsViewModalOpen(false)}
+        key={modalKey + "V"}
+      />
       <ShiftDetailEditor
         shift={selectedEvent}
         isModalOpen={isFormModalOpen}
         closeModal={() => setIsFormModalOpen(false)}
         onSubmit={submitFormHandler}
         onDelete={deleteFormHandler}
-        key={modalKey}
+        key={modalKey + "E"}
       />
       <Theme1 />
       <div className="">
