@@ -22,7 +22,7 @@ function NotificationIcon() {
       try {
         // Get user data
         const userData = await getCurrentUser(userToken);
-        console.log("Notifications");
+        // console.log("Notifications");
         console.log(userData.notificationList);
         // Check if notificationList is empty
         if (userData && userData.notificationList && userData.notificationList.length === 0) {

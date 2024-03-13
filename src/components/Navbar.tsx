@@ -1,7 +1,11 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Navbar as FbNavbar } from "flowbite-react";
-import { isLoggedInAtom, userAccessLevelAtom, userTokenAtom } from "../globalAtom";
+import {
+  isLoggedInAtom,
+  userAccessLevelAtom,
+  userTokenAtom,
+} from "../globalAtom";
 import { useAtom } from "jotai";
 
 function Navbar() {
@@ -16,7 +20,7 @@ function Navbar() {
       : accessLevel === 1
       ? "/employeeList"
       : accessLevel === 2
-      ? "/addNewUser"
+      ? "/accountManager"
       : "/unauthorize";
   const handleLogout = () => {
     setUserTokenAtom(null);
@@ -56,13 +60,22 @@ function Navbar() {
               </FbNavbar.Link>
             )}
             {accessLevel == 2 && (
-              <FbNavbar.Link
-                as={Link}
-                to="/addNewUser"
-                className="text-white hover:text-secondary"
-              >
-                Add New User
-              </FbNavbar.Link>
+              <>
+                <FbNavbar.Link
+                  as={Link}
+                  to="/accountManager"
+                  className="text-white hover:text-secondary"
+                >
+                  Account Manager
+                </FbNavbar.Link>
+                <FbNavbar.Link
+                  as={Link}
+                  to="/addNewUser"
+                  className="text-white hover:text-secondary"
+                >
+                  Add New User
+                </FbNavbar.Link>
+              </>
             )}
             <FbNavbar.Link
               as={Link}
@@ -83,16 +96,17 @@ function Navbar() {
         )}
       </FbNavbar.Collapse>
       {/* Login button outside hamburger menu */}
-      {!isLoginPage && !isLoggedIn && ( // Omit the log in button on the login page
-        <div className="hidden md:block">
-          <Link
-            to="/login"
-            className="text-white bg-secondary hover:bg-primary focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
-          >
-            Log in
-          </Link>
-        </div>
-      )}
+      {!isLoginPage &&
+        !isLoggedIn && ( // Omit the log in button on the login page
+          <div className="hidden md:block">
+            <Link
+              to="/login"
+              className="text-white bg-secondary hover:bg-primary focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
+            >
+              Log in
+            </Link>
+          </div>
+        )}
     </FbNavbar>
   );
 }

@@ -32,7 +32,7 @@ function Login() {
           : accessLevel === 1
           ? "/employeeList"
           : accessLevel === 2
-          ? "/addNewUser"
+          ? "/accountManager"
           : "/unauthorize";
       setUserToken(token);
       setUserAccessLevel(accessLevel);

@@ -3,6 +3,7 @@ import Theme1 from "../components/theme/Theme1";
 import { addNewUser } from "../api/addNewUser";
 import { userTokenAtom } from "../globalAtom";
 import { useAtom } from "jotai";
+import { Spinner } from 'flowbite-react';
 
 const AddNewUserPage = () => {
   const [firstName, setFirstName] = useState("");
@@ -11,31 +12,32 @@ const AddNewUserPage = () => {
   const [password, setPassword] = useState("");
   const [accessLevel, setAccessLevel] = useState("1");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState("");
   const [userToken] = useAtom(userTokenAtom);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setIsLoading(true);
     // Validate form inputs
     if (!firstName || !lastName || !email || !password) {
       setError("Please fill in all fields");
+      setIsLoading(false);
       return;
     }
 
     // Handle form submission logic here
-    const res = await addNewUser(
-      userToken,
-      email,
-      password,
-      accessLevel,
-      firstName,
-      lastName
-    );
+    const res = await addNewUser(userToken, email, password, {
+      firstName: firstName,
+      lastName: lastName,
+      accessLevel: accessLevel,
+    });
     if (res) {
       setNotification("User created successfully");
+      setError("");
     } else {
       setError("Something went wrong");
+      setNotification("");
     }
 
     // Clear form inputs and error message
@@ -44,7 +46,8 @@ const AddNewUserPage = () => {
     setEmail("");
     setPassword("");
     setAccessLevel("1");
-    setError("");
+
+    setIsLoading(false);
   };
 
   return (
@@ -122,12 +125,16 @@ const AddNewUserPage = () => {
           </div>
           {error && <p className="text-red-500">{error}</p>}
           {notification && <p className="text-green-500">{notification}</p>}
-          <button
-            type="submit"
-            className="bg-fifth hover:bg-forth text-white font-bold py-2 px-4 rounded"
-          >
-            Create
-          </button>
+          {isLoading ? (
+            <Spinner aria-label="Loading" color="pink" />
+          ) : (
+            <button
+              type="submit"
+              className="bg-fifth hover:bg-forth text-white font-bold py-2 px-4 rounded"
+            >
+              Create
+            </button>
+          )}
         </form>
       </div>
     </>
