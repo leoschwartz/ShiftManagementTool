@@ -1,17 +1,12 @@
 import axios from "axios";
-export const getSchedule = async (userToken, employeeId, date) => {
-    const apiUrl = import.meta.env.VITE_API_URL + "/schedule/getByDate";
-  // const apiUrl = "http://localhost:5000/schedule/getByDate";
+export const getScheduleById = async (userToken, id) => {
+  const apiUrl = import.meta.env.VITE_API_URL + "/schedule/get/" + id;
   if (!apiUrl) {
     throw new Error("API_URL is not defined");
   }
   try {
-    const res = await axios.post(
+    const res = await axios.get(
       apiUrl,
-      {
-        employeeId: employeeId,
-        date: date,
-      },
       {
         headers: {
           Authorization: "Bearer " + userToken,

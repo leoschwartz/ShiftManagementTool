@@ -18,7 +18,9 @@ function Notification(props) {
           : "border-amber-400 text-amber-700"
       }  px-4 py-3 rounded relative my-5`}
     >
-      <strong className="font-bold">Success!</strong>
+      {props.type == "success" && (
+        <strong className="font-bold">Success!</strong>
+      )}
       <span className="block sm:inline">
         {props.message ? props.message : "Your changes have been saved."}
       </span>
