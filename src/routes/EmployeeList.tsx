@@ -27,10 +27,12 @@ const EmployeeList = () => {
 
         if (response.ok) {
           const userData = await response.json();
-          if (userData.employeeList) {
+          console.log(userData);
+          if (userData.employeeList.length !== 0) {
+            console.warn("Employee list fetched!");
             setEmployeeList(userData.employeeList);
           } else {
-            console.warn("employeeList is null!");
+            console.warn("Empty employeelist!");
             setEmployeeList([]);
           }
         } else {

@@ -8,6 +8,7 @@ const getCategories = async (userId, userToken) => {
       });
       if (response.ok) {
         const data = await response.json();
+        console.log("Categories fetched!")
         return data;
       } else {
         console.error("Could not get category list");
