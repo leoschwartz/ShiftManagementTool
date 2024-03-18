@@ -75,9 +75,15 @@ const EmployeeTablesByCategory = ({ userId, userToken, employeeList }) => {
                         <Table.Cell className="w-1/4">
                           <Link
                             to={`/scheduleEditor/${employee.id}`}
-                            className="font-medium text-secondary hover:underline dark:text-cyan-500"
+                            className="font-medium text-secondary hover:underline mr-4 text-nowrap"
                           >
                             Edit Schedule
+                          </Link>
+                          <Link
+                            to={`/performance/${employee.id}`}
+                            className="font-medium text-secondary hover:underline text-nowrap "
+                          >
+                            View Performance
                           </Link>
                         </Table.Cell>
                       </Table.Row>
