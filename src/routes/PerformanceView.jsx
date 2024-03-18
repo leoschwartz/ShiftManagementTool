@@ -12,10 +12,12 @@ import { dateToMonthDayYear } from "../utils/dateToMonthDayYear";
 function PerformanceView() {
   const { employeeId } = useParams();
   const [userToken] = useAtom(userTokenAtom);
-  const [chartData, setChartData] = useState([]);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [showChart, setShowChart] = useState(false);
+
+  const [data, setData] = useState([]);
+  let chartData = [];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,8 +40,6 @@ function PerformanceView() {
       inputStartDate,
       inputEndDate
     );
-    setChartData([]);
-    setShowChart(false);
     setStartDate(inputStartDate);
     setEndDate(inputEndDate);
     addDataToChart(result);
@@ -47,7 +47,6 @@ function PerformanceView() {
   };
 
   const addDataToChart = async (shifts) => {
-
     for (let i = 0; i < shifts.length; i++) {
       if (!shifts[i].report && !verifyString(shifts[i].report)) continue;
       // get a report
@@ -63,31 +62,32 @@ function PerformanceView() {
         report.professionalismScore;
       // Check if the date already exists in the chartData
       const date = dateToMonthDayYear(shifts[i].startTime);
+      console.log(date);
       let sameDate = false;
       // if it does, update the value by doing an average
       for (let j = 0; j < chartData.length; j++) {
+        console.log(chartData[j].date === date);
         if (chartData[j].date === date) {
           console.log(chartData);
-          setChartData((prev) => {
-            const newChartData = [...prev];
-            newChartData[j].shiftCount += 1;
-            newChartData[j].value =
-              (newChartData[j].value + report.value) /
-              newChartData[j].shiftCount;
-            return newChartData;
-          });
+          chartData[j].value =
+            (chartData[j].value * chartData[j].shiftCount + report.value) /
+            (chartData[j].shiftCount + 1);
+          chartData[j].shiftCount += 1;
           sameDate = true;
           break;
         }
       }
       if (!sameDate) {
         // if it doesn't, add a new entry
-        setChartData((prev) => [
-          ...prev,
-          { date: date, value: report.value, shiftCount: 1 },
-        ]);
+        chartData.push({
+          date: date,
+          value: report.value,
+          shiftCount: 1,
+        });
+        length += 1;
       }
     }
+    setData(chartData);
   };
 
   return (
@@ -130,7 +130,13 @@ function PerformanceView() {
         </form>
         {showChart && (
           <div>
-            <PerformanceLineChart data={chartData} width={600} height={400} startDate={startDate} endDate={endDate} />
+            <PerformanceLineChart
+              data={data}
+              width={600}
+              height={400}
+              startDate={startDate}
+              endDate={endDate}
+            />
           </div>
         )}
       </div>
