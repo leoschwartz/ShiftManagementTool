@@ -10,12 +10,12 @@ Modal.propTypes = {
 function Modal(props) {
   return (
     <div
-      className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 ${
+      className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50  ${
         !props.isModalOpen && "hidden"
       }`}
     >
       <div className="fixed inset-0 " onClick={() => props.onClose()}></div>
-      <div className="bg-white p-4 rounded-lg min-w-[50%] z-10">
+      <div className="bg-white p-4 rounded-lg min-w-[50%] z-10 ">
         <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
             {props.title}
@@ -44,7 +44,7 @@ function Modal(props) {
             <span className="sr-only">Close modal</span>
           </button>
         </div>
-        <div>{props.children}</div>
+        <div className="max-h-96 overflow-y-scroll">{props.children}</div>
       </div>
     </div>
   );

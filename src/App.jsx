@@ -13,6 +13,7 @@ import AuthorizationCheck from "./components/AuthorizationCheck";
 import AddNewUserPage from "./routes/AddNewUserPage";
 import EmployeeList from "./routes/EmployeeList";
 import AdminManagerAccountList from "./routes/AdminManagerAccountList";
+import PerformanceView from "./routes/PerformanceView";
 function App() {
   return (
     <>
@@ -29,7 +30,10 @@ function App() {
                 />
               }
             >
-              <Route path="/accountManager" element={<AdminManagerAccountList />} />
+              <Route
+                path="/accountManager"
+                element={<AdminManagerAccountList />}
+              />
               <Route path="/addNewUser" element={<AddNewUserPage />}></Route>
             </Route>
             <Route
@@ -42,6 +46,10 @@ function App() {
               <Route
                 path="/scheduleEditor/:employee"
                 element={<ScheduleEditor />}
+              ></Route>
+              <Route
+                path="/performance/:employeeId"
+                element={<PerformanceView />}
               ></Route>
             </Route>
             <Route
