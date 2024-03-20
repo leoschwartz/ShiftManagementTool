@@ -1,22 +1,15 @@
 import { useEffect, useRef, useState } from "react";
+import Theme1 from "./theme/Theme1";
+import { useAtom } from "jotai";
+import { userTokenAtom } from "../globalAtom";
+import PropTypes from "prop-types";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { v4 as uuid } from "uuid";
-import Theme1 from "./theme/Theme1";
-import { getSchedule } from "../api/getSchedule";
-import { getScheduleById } from "../api/getScheduleById"
-import { useAtom } from "jotai";
-import { userTokenAtom, userAccessLevelAtom } from "../globalAtom";
-import { getShifts } from "../api/getShifts";
-import PropTypes from "prop-types";
-import { createShift } from "../api/createShift";
-import { updateShift } from "../api/updateShift";
-import { updateSchedule } from "../api/updateSchedule";
 import { addDays } from "../utils/getSundayOfWeek";
 import { getCurrentUser } from "../api/getCurrentUser";
-import { deleteShift } from "../api/deleteShift";
 import Notification from "./utils/Notification";
 import ShiftDetail from "./ShiftDetail";
 import ShiftDetailEditor from "./ShiftDetailEditor";
@@ -33,11 +26,11 @@ function renderEventContent(eventInfo) {
     </>
   );
 }
-
-function Schedule({ employeeId }) {
+//see bottom for props doc
+function Schedule({ employeeId, propAllowEdits, propOnePage,
+      propCreateShift, propDeleteShift, propGetSchedule, 
+      propGetScheduleById, propGetShifts, propUpdateSchedule, propUpdateShift}) {
   const [userToken] = useAtom(userTokenAtom);
-  const [userAccessLevel] = useAtom(userAccessLevelAtom);
-  //const [currentEvents, setCurrentEvents] = useState([]); //Shifts that are directly updated to display
   const [currentEventsKey, setCurrentEventsKey] = useState(0); //Change to update display
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -134,7 +127,7 @@ function Schedule({ employeeId }) {
   // Fetch and update Schedule and CurrentEvents objects
   const fetchCurrentShifts = async (currentDate = new Date(), doUpdateDataSource = true) => {
     try {
-      const res = await getSchedule(
+      const res = await propGetSchedule(
         userToken,
         employeeId,
         addDays(currentDate,1).toISOString() //hack! timezone issue in backend
@@ -142,7 +135,7 @@ function Schedule({ employeeId }) {
       if (res) {
         const startDate = new Date(res.startTime);
         const endDate = new Date(res.endTime);
-        var shifts = await getShifts(
+        var shifts = await propGetShifts(
           userToken,
           employeeId,
           startDate,
@@ -179,7 +172,7 @@ function Schedule({ employeeId }) {
 
   // Open a new shift
   const handleDateSelect = (selectInfo) => {
-    if (userAccessLevel == 1 ? true : false) {
+    if (propAllowEdits){//userAccessLevel == 1 ? true : false) {
       setSelectedEvent({
         id: null,
         startTime: selectInfo.start,
@@ -203,7 +196,7 @@ function Schedule({ employeeId }) {
     const event = currentEvents.current.find((event) => event.id === eventId);
     setSelectedEvent(event);
     setModalKey(modalKey + 1);
-    if (userAccessLevel == 1 ? true : false)
+    if (propAllowEdits)
       setIsFormModalOpen(true);
     else
       setIsViewModalOpen(true);
@@ -278,7 +271,7 @@ function Schedule({ employeeId }) {
     if (shift.parentSchedule != null) {
       var pos = scheduleCache.current.findIndex((i) => {return i.id == shift.parentSchedule});
       if (pos == -1) {
-        const lostSchedule = await getScheduleById(userToken, shift.parentSchedule);
+        const lostSchedule = await propGetScheduleById(userToken, shift.parentSchedule);
         if (!lostSchedule)
           console.error("lostSchedule is null! Asked for ID + " + shift.parentSchedule);
         scheduleCache.current.push(lostSchedule);
@@ -296,7 +289,7 @@ function Schedule({ employeeId }) {
       return;
     }
     //Very unacceptable schedule - ask the server for an acceptable schedule
-    const res = await getSchedule(
+    const res = await propGetSchedule(
       userToken,
       employeeId,
       shift.startTime.toISOString()
@@ -314,20 +307,20 @@ function Schedule({ employeeId }) {
   const saveNewSchedule = async() => { 
     //parentSchedule may be null at this point, but that will be handled by the server.
     if (schedule.current.id) {
-      await updateSchedule(userToken, schedule.current.id, {
+      await propUpdateSchedule(userToken, schedule.current.id, {
         addMultipleShifts: addedShifts.map((shift) => shift.id),
         removeMultipleShifts: deletedShiftIds,
       });
     }
     
     for (const shift of addedShifts)
-      await createShift(userToken, shift);
+      await propCreateShift(userToken, shift);
     setAddedShifts([]);
     for (const shiftId of deletedShiftIds)
-      await deleteShift(userToken, shiftId);
+      await propDeleteShift(userToken, shiftId);
     setDeletedShiftIds([]);
     for (const shift of editedShifts)
-      await updateShift(userToken, shift);
+      await propUpdateShift(userToken, shift);
     setEditedShifts([]);
     setIsSaved(true);
 
@@ -377,8 +370,8 @@ function Schedule({ employeeId }) {
             right: "timeGridWeek,timeGridDay",
           }}
           initialView="timeGridWeek"
-          editable={userAccessLevel == 1 ? true : false}
-          selectable={userAccessLevel == 1 ? true : false}
+          editable={propAllowEdits}
+          selectable={propAllowEdits}
           selectMirror={true}
           height="80vh"
           dayMaxEvents={true}
@@ -410,7 +403,7 @@ function Schedule({ employeeId }) {
         <div
           id="buttonSet"
           className={`flex items-center justify-center my-5 ${
-            userAccessLevel == 1 ? "" : "hidden"
+            propAllowEdits ? "" : "hidden"
           }`}
         >
           <button
@@ -432,6 +425,17 @@ function Schedule({ employeeId }) {
 }
 
 Schedule.propTypes = {
-  employeeId: PropTypes.string.isRequired,
+  employeeId: PropTypes.string.isRequired, //employee who's schedule is being viewed
+  propAllowEdits: PropTypes.bool.isRequired, //If the user has authority to edit the schedule
+  propOnePage: PropTypes.bool.isRequired, //todo
+  //api
+  propCreateShift: PropTypes.func, //called when saving with a new shift
+  propDeleteShift: PropTypes.func, //called when saving with a deleted shift
+  propGetSchedule: PropTypes.func.isRequired, //fetches the schedule object for the visible time
+  propGetScheduleById: PropTypes.func.isRequired, //fetches *a* schedule object. this probably isn't required if propOnePage=false 
+  propGetShifts: PropTypes.func.isRequired, //fetches shifts for a schedule object
+  propUpdateSchedule: PropTypes.func, //called for each schedule containing changes for saving
+  propUpdateShift: PropTypes.func, //ditto for shifts
+
 };
 export default Schedule;
