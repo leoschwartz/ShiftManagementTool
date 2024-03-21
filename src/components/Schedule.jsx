@@ -432,7 +432,7 @@ function Schedule({ employeeId, propAllowEdits, propOnePage,
 Schedule.propTypes = {
   employeeId: PropTypes.string.isRequired, //employee who's schedule is being viewed
   propAllowEdits: PropTypes.bool.isRequired, //If the user has authority to edit the schedule
-  propOnePage: PropTypes.bool.isRequired, //todo
+  propOnePage: PropTypes.bool.isRequired, //hides the date range & pagination and locks date to first week of 1900
   //api
   propCreateShift: PropTypes.func, //called when saving with a new shift
   propDeleteShift: PropTypes.func, //called when saving with a deleted shift
