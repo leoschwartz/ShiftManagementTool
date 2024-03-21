@@ -84,7 +84,7 @@ const EmployeeTablesByCategory = ({ userId, userToken, employeeList }) => {
                             className="font-medium text-secondary hover:underline dark:text-cyan-500"
                           >
                             Edit Schedule Template
-                          </Link>
+                          </Link><br/>
                           <Link
                             to={`/performance/${employee.id}`}
                             className="font-medium text-secondary hover:underline text-nowrap "
@@ -136,6 +136,12 @@ const EmployeeTablesByCategory = ({ userId, userToken, employeeList }) => {
                               className="font-medium text-secondary hover:underline dark:text-cyan-500"
                             >
                               Edit Schedule Template
+                            </Link><br/>
+                            <Link
+                              to={`/performance/${employee.id}`}
+                              className="font-medium text-secondary hover:underline text-nowrap "
+                            >
+                              View Performance
                             </Link>
                           </Table.Cell>
                         </Table.Row>
