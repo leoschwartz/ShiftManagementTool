@@ -365,9 +365,9 @@ function Schedule({ employeeId, propAllowEdits, propOnePage,
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "timeGridWeek,timeGridDay",
+            left: !propOnePage ? "prev,next today" : null,
+            center: !propOnePage ? "title" : null, //should add something to oneday toolbar?
+            right: !propOnePage ? "timeGridWeek,timeGridDay" : null,
           }}
           initialView="timeGridWeek"
           editable={propAllowEdits}
@@ -381,6 +381,11 @@ function Schedule({ employeeId, propAllowEdits, propOnePage,
           eventClick={handleEventClick}
           eventDrop={handleEventDrop}
           eventResize={handleEventDrop}
+          validRange={
+            propOnePage ? {start: '1900-01-07',
+            end: '1900-01-14'} : null
+          }
+          dayHeaderFormat={propOnePage ? {weekday: 'long'} : null}
           ref={calendarRef}
         />
         {isSaved && (

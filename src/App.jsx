@@ -1,6 +1,7 @@
 import "./App.css";
 import ScheduleView from "./routes/ScheduleView";
 import ScheduleEditor from "./routes/ScheduleEditor";
+import ScheduleTemplateEditor from "./routes/ScheduleTemplateEditor";
 import Navbar from "./components/Navbar";
 import NotificationIcon from "./components/NotificationIcon";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -43,6 +44,10 @@ function App() {
                 path="/scheduleEditor/:employee"
                 element={<ScheduleEditor />}
               ></Route>
+              <Route
+              path="/scheduleTemplateEditor/:employee"
+              element={<ScheduleTemplateEditor />}
+            ></Route>
             </Route>
             <Route
               element={

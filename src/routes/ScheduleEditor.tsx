@@ -10,14 +10,15 @@ import { updateShift } from "../api/updateShift";
 import { updateSchedule } from "../api/updateSchedule";
 import { deleteShift } from "../api/deleteShift";
 
-const ScheduleView = () => {
+const ScheduleEditor = () => {
   let { employee } = useParams();
   return (
     <div className="">
       <Schedule employeeId={employee ?? ""} propAllowEdits={true} propOnePage={false}
       propCreateShift={createShift} propDeleteShift={deleteShift} propGetSchedule={getSchedule}
-      propGetScheduleById={getScheduleById} propGetShifts={getShifts} propUpdateSchedule={updateSchedule} propUpdateShift={updateShift}/>
+      propGetScheduleById={getScheduleById} propGetShifts={getShifts} propUpdateSchedule={updateSchedule} 
+      propUpdateShift={updateShift}/>
     </div>
   );
 };
-export default ScheduleView;
+export default ScheduleEditor;
