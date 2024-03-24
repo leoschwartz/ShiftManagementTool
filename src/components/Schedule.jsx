@@ -133,13 +133,10 @@ function Schedule({ employeeId, propAllowEdits, propOnePage,
         addDays(currentDate,1).toISOString() //hack! timezone issue in backend
       );
       if (res) {
-        const startDate = new Date(res.startTime);
-        const endDate = new Date(res.endTime);
+        //this could be optimized.. getshifts re-fetchs the shift id list but we already have that
         var shifts = await propGetShifts(
           userToken,
-          employeeId,
-          startDate,
-          endDate
+          res.id,
         );
         schedule.current = res;
         { //Apply queues

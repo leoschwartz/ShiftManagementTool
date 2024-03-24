@@ -5,7 +5,7 @@ import axios from "axios";
 // @param {Date} startTime
 // @param {Date} endTime
 // @returns {Array} array of shifts
-export const getShiftTemplates = async (userToken, employeeId, startTime, endTime) => {
+export const getShiftTemplates = async (userToken, scheduleId) => {
   // startTime and endTime params should be ignored. Similar deal to getScheduleTemplate. 
   // It's expected that this will cast the shift startTime and endTimes into date objects!
   /* e.g.
