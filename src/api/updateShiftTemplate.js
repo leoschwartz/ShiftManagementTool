@@ -1,4 +1,4 @@
-import updateShift from "./updateShift"
+import { updateShift } from "./updateShift"
 export const updateShiftTemplate = async (userToken, shiftData) => {
   shiftData.startTime = addDays(shiftData.startTime, -6); //convert from first day to first monday
   shiftData.endTime = addDays(shiftData.endTime, -6);
