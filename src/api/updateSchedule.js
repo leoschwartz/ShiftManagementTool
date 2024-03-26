@@ -10,7 +10,7 @@ import axios from "axios";
 // @param {object} updateData
 // @returns {object} updated schedule
 
-export const updateSchedule = async (userToken, employeeId, updateData) => {
+export const updateSchedule = async (userToken, scheduleId, updateData) => {
   const apiUrl = import.meta.env.VITE_API_URL + "/schedule/update";
   if (!apiUrl) {
     throw new Error("API_URL is not defined");
@@ -18,7 +18,7 @@ export const updateSchedule = async (userToken, employeeId, updateData) => {
   try {
     const res = await axios.put(
       apiUrl,
-      { id: employeeId, updateData: updateData },
+      { id: scheduleId, updateData: updateData },
       {
         headers: {
           Authorization: "Bearer " + userToken,

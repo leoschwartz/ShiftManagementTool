@@ -11,11 +11,15 @@ function ShiftDetailEditor(props) {
   if (!shift) return;
   function onSubmit(event) {
     event.preventDefault();
-    if (shift.startTime && shift.endTime && shift.startTime < shift.endTime)
-      props.onSubmit(shift);
-    else {
-      setError("Invalid time range!");
+    if (!shift.name) {
+      setError("Name is required!"); //suggested by prof on mar18 meeting
+      return;
     }
+    if (!shift.startTime || !shift.endTime || shift.startTime >= shift.endTime) {
+      setError("Invalid time range!");
+      return;
+    }
+    props.onSubmit(shift);
   }
   function onDelete(event) {
     event.preventDefault();
@@ -26,8 +30,9 @@ function ShiftDetailEditor(props) {
     console.log("open report modal");
     setIsReportModalOpen(true);
   };
-  return (
+  return ( //todo! remove reportModal on new shifts, causes 404
     <>
+      
       <ReportModal
         isModalOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
