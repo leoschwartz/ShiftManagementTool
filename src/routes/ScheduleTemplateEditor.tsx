@@ -7,7 +7,7 @@ import { getShiftTemplates } from "../api/getShiftTemplates";
 import { createShiftTemplate } from "../api/createShiftTemplate";
 import { updateShiftTemplate } from "../api/updateShiftTemplate";
 import { updateScheduleTemplate } from "../api/updateScheduleTemplate";
-import { deleteShiftTemplate } from "../api/deleteShiftTemplate";
+import { deleteShift } from "../api/deleteShift";//careful about this! both schedules use same api here!
 
 //Failsafe for frontend bugs
 const getScheduleByIdFailsafe = async (userToken, id) => {
@@ -22,9 +22,6 @@ const getScheduleByIdFailsafe = async (userToken, id) => {
    This is the first Sunday-inclusive week expressible in UNIX time. 
    This means all startTimes and endTimes on new shifts will fall in this range, 
    and shifts and schedules need to be retrieved in this range in order to be visible.
-
-   There isn't an obvious answer to how template dates should be stored serverside, 
-   but whatever it is it needs to be converted on both in-and-out data to this wack format
 */
 
 const ScheduleTemplateEditor = () => {
@@ -32,7 +29,7 @@ const ScheduleTemplateEditor = () => {
   return (
     <div className="">
       <Schedule employeeId={employee ?? ""} propAllowEdits={true} propOnePage={true}
-      propCreateShift={(createShiftTemplate)} propDeleteShift={deleteShiftTemplate} propGetSchedule={getScheduleTemplate}
+      propCreateShift={(createShiftTemplate)} propDeleteShift={deleteShift} propGetSchedule={getScheduleTemplate}
       propGetScheduleById={getScheduleByIdFailsafe} propGetShifts={getShiftTemplates} propUpdateSchedule={updateScheduleTemplate} 
       propUpdateShift={updateShiftTemplate}/>
     </div>

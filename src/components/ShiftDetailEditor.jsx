@@ -30,8 +30,9 @@ function ShiftDetailEditor(props) {
     console.log("open report modal");
     setIsReportModalOpen(true);
   };
-  return (
+  return ( //todo! remove reportModal on new shifts, causes 404
     <>
+      
       <ReportModal
         isModalOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}

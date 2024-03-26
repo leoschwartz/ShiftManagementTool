@@ -1,14 +1,25 @@
+import axios from "axios";
 export const getScheduleTemplate = async (userToken, employeeId, date) => {
-  // date parameter should be completely ignored
-  // it's only a parameter so it can be called the same way as the non-template version
-  // todo
-  return {
-        id:"0000-0000",
-        archived: false,
-        desc: "",
+  const apiUrl = import.meta.env.VITE_API_URL + "/scheduleTemplate/getFor";
+  if (!apiUrl) {
+    throw new Error("API_URL is not defined");
+  }
+  try {
+    const res = await axios.post(
+      apiUrl,
+      {
         employeeId: employeeId,
-        startTime: new Date(1900, 1, 1),
-        endTime: new Date(1900, 1, 7),
-        shiftIdList: []
-  };
+        date: date,
+      },
+      {
+        headers: {
+          Authorization: "Bearer " + userToken,
+        },
+      }
+    );
+    return res.data;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
 };
