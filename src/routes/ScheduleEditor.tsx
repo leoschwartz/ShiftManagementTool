@@ -14,7 +14,7 @@ const ScheduleEditor = () => {
   let { employee } = useParams();
   return (
     <div className="">
-      <Schedule employeeId={employee ?? ""} propAllowEdits={true} propOnePage={false}
+      <Schedule employeeId={employee ?? ""} propAllowEdits={true} propOnePage={false} propRetro={false}
       propCreateShift={createShift} propDeleteShift={deleteShift} propGetSchedule={getSchedule}
       propGetScheduleById={getScheduleById} propGetShifts={getShifts} propUpdateSchedule={updateSchedule} 
       propUpdateShift={updateShift}/>

@@ -27,7 +27,7 @@ function renderEventContent(eventInfo) {
   );
 }
 //see bottom for props doc
-function Schedule({ employeeId, propAllowEdits, propOnePage,
+function Schedule({ employeeId, propAllowEdits, propOnePage, propRetro,
       propCreateShift, propDeleteShift, propGetSchedule, 
       propGetScheduleById, propGetShifts, propUpdateSchedule, propUpdateShift}) {
   const [userToken] = useAtom(userTokenAtom);
@@ -301,7 +301,7 @@ function Schedule({ employeeId, propAllowEdits, propOnePage,
   }
 
   // Send changes to backend
-  const saveNewSchedule = async() => { 
+  const saveNewSchedule = async(retro) => { 
     //parentSchedule may be null at this point, but that will be handled by the server.
     if (schedule.current.id) {
       await propUpdateSchedule(userToken, schedule.current.id, {
@@ -408,14 +408,21 @@ function Schedule({ employeeId, propAllowEdits, propOnePage,
             propAllowEdits ? "" : "hidden"
           }`}
         >
+          {propRetro && (
+          <button
+            className="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded mr-2 disabled:opacity-50"
+            onClick={saveNewSchedule(true)}
+          >
+            Retroactive Update
+          </button>)}
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2 disabled:opacity-50"
-            onClick={saveNewSchedule}
+            onClick={saveNewSchedule(false)}
           >
-            Save
+            Update
           </button>
           <button
-            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mr-2"
             onClick={resetSchedule}
           >
             Reset
@@ -430,6 +437,7 @@ Schedule.propTypes = {
   employeeId: PropTypes.string.isRequired, //employee who's schedule is being viewed
   propAllowEdits: PropTypes.bool.isRequired, //If the user has authority to edit the schedule
   propOnePage: PropTypes.bool.isRequired, //hides the date range & pagination and locks date to first week of 1900
+  propRetro: PropTypes.bool.isRequired, //adds the 'retroactive' save
   //api
   propCreateShift: PropTypes.func, //called when saving with a new shift
   propDeleteShift: PropTypes.func, //called when saving with a deleted shift
