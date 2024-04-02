@@ -411,19 +411,19 @@ function Schedule({ employeeId, propAllowEdits, propOnePage, propRetro,
           {propRetro && (
           <button
             className="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded mr-2 disabled:opacity-50"
-            onClick={saveNewSchedule(true)}
+            onClick={() => {saveNewSchedule(true)}}
           >
             Retroactive Update
           </button>)}
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2 disabled:opacity-50"
-            onClick={saveNewSchedule(false)}
+            onClick={() => {saveNewSchedule(false)}}
           >
             Update
           </button>
           <button
             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mr-2"
-            onClick={resetSchedule}
+            onClick={() => {resetSchedule()}}
           >
             Reset
           </button>
