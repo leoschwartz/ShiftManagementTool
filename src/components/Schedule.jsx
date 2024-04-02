@@ -27,7 +27,7 @@ function renderEventContent(eventInfo) {
   );
 }
 //see bottom for props doc
-function Schedule({ employeeId, propAllowEdits, propOnePage, propRetro,
+function Schedule({ employeeId, propAllowEdits, propOnePage, propRetro, propAllowRequest,
       propCreateShift, propDeleteShift, propGetSchedule, 
       propGetScheduleById, propGetShifts, propUpdateSchedule, propUpdateShift}) {
   const [userToken] = useAtom(userTokenAtom);
@@ -348,6 +348,7 @@ function Schedule({ employeeId, propAllowEdits, propOnePage, propRetro,
         isModalOpen={isViewModalOpen}
         closeModal={() => setIsViewModalOpen(false)}
         key={modalKey + "V"}
+        allowRequest={propAllowRequest}
       />
       <ShiftDetailEditor
         shift={selectedEvent}
@@ -438,6 +439,7 @@ Schedule.propTypes = {
   propAllowEdits: PropTypes.bool.isRequired, //If the user has authority to edit the schedule
   propOnePage: PropTypes.bool.isRequired, //hides the date range & pagination and locks date to first week of 1900
   propRetro: PropTypes.bool.isRequired, //adds the 'retroactive' save
+  propAllowRequest: PropTypes.bool, //adds the 'request shift' button to view modal
   //api
   propCreateShift: PropTypes.func, //called when saving with a new shift
   propDeleteShift: PropTypes.func, //called when saving with a deleted shift

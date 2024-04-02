@@ -1,8 +1,25 @@
 import Modal from "./utils/Modal";
+import { useState, useEffect } from "react";
+import { useAtom } from "jotai";
+import { userTokenAtom } from "../globalAtom";
 import PropTypes from "prop-types";
 import { dateToHourMinute } from "../utils/dateToHourMinute";
+import { getUser } from "../api/getUser";
 export default function ShiftDetail(props) {
   const shift = props.shift;
+  const [createdBy, setCreatedBy] = useState(null);  
+  const [userToken] = useAtom(userTokenAtom);
+  useEffect(() => {
+    const body = async () => {
+      const res = await getUser(userToken, shift.createdBy)
+      setCreatedBy(res);
+    }
+    if (shift)
+      body();
+  }, []);
+  function requestShift(event) {
+    event.preventDefault();
+  }
   return (
     <Modal
       title="Shift Detail"
@@ -53,9 +70,18 @@ export default function ShiftDetail(props) {
         <div className="flex justify-between mb-4">
           <h2 className="text-xl font-bold text-forth">Created By:</h2>
           <p className="text-xl ">
-            {shift?.createdBy?.firstName} {shift?.createdBy?.lastName}
+            {createdBy?.firstName} {createdBy?.lastName}
           </p>
         </div>
+        
+        {props.allowRequest && (
+            <button
+              onClick={requestShift}
+              className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full ml-2"
+            >
+              Request Shift
+            </button>
+          )}
       </div>
     </Modal>
   );
@@ -66,4 +92,5 @@ ShiftDetail.propTypes = {
   isModalOpen: PropTypes.bool,
   closeModal: PropTypes.func,
   key: PropTypes.number,
+  allowRequest: PropTypes.bool,
 };
