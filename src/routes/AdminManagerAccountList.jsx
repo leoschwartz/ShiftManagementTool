@@ -114,7 +114,7 @@ function AdminManagerAccountList() {
         />
       </Modal>
       <section className="overflow-x-auto mx-2 sm:mx-6">
-        <h1 className="text-3xl font-semibold tracking-wide my-4 text-primary">
+        <h1 className="text-3xl font-bold tracking-wide my-4 text-primary text-center">
           Account manager
         </h1>
         <div>

@@ -70,6 +70,7 @@ const Profile = () => {
     <>
       <Theme1 />
       <div className="flex flex-col items-center px-8 mt-8 lg:px-32 md:px-24 sm:px-16">
+        <h1 className="text-3xl font-bold mb-4">Profile Information</h1>
         <div className="mt-4 text-center w-full">
           <div className="bg-white p-4 border border-primary rounded-lg text-left space-y-2">
             <div className="pb-2 mb-2 flex">
