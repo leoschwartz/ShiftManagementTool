@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Table, Spinner } from "flowbite-react";
 import getCategories from "../api/getCategories";
-import { getUser } from "../api/getUser";
+import { getUserById } from "../api/getUserById";
 
 const EmployeeTablesByCategory = ({ userId, userToken, employeeList }) => {
   const [categoryList, setCategoryList] = useState([]);
@@ -17,12 +17,12 @@ const EmployeeTablesByCategory = ({ userId, userToken, employeeList }) => {
       const categories = await getCategories(userId, userToken);
       setCategoryList(categories);
       // for (let i = 0; i < employeeList.length; i++) {
-      //   const employeeDetails = await getUser(userToken, employeeList[i]);
+      //   const employeeDetails = await getUserById(userToken, employeeList[i]);
       //   setEmployeeListDetails((prevState) => [...prevState, employeeDetails]);
       // }
       const array = await Promise.all(
         employeeList.map(async (employee) => {
-          const employeeDetails = await getUser(userToken, employee);
+          const employeeDetails = await getUserById(userToken, employee);
           return employeeDetails;
         })
       );

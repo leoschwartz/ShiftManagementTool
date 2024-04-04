@@ -126,7 +126,9 @@ function Login() {
 
           <div className="mt-6">
             {isLoading ? (
-              <Spinner aria-label="Loading" color="pink" />
+              <div className="flex justify-center items-center">
+                <Spinner aria-label="Loading" color="pink" />
+              </div>
             ) : (
               <button className="w-full py-2 px-4 text-center rounded-lg bg-fifth text-white hover:bg-forth focus:outline-none">
                 Submit
