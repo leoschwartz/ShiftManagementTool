@@ -72,18 +72,15 @@ function AdminManagerAccountList() {
     e.preventDefault();
     const firstName = e.target.firstName.value;
     const lastName = e.target.lastName.value;
-    const updateDate = {};
+    const updateData = {};
     if (verifyString(firstName)) {
-      updateDate.firstName = firstName;
+      updateData.firstName = firstName;
     }
     if (verifyString(lastName)) {
-      updateDate.lastName = lastName;
+      updateData.lastName = lastName;
     }
     try {
-      const data = await updateUser(userToken, selectedUser.id, {
-        firstName: firstName,
-        lastName: lastName,
-      });
+      const data = await updateUser(userToken, selectedUser.id, updateData);
       if (data) {
         await fetchData();
         setShowSuccessToast(true);

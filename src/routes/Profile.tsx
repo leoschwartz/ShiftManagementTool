@@ -27,7 +27,6 @@ const Profile = () => {
     const fetchUserProfile = async () => {
       try {
         const userData = await getUser(userToken);
-        console.log(userData);
 
         setUserId(userData.id);
         setFirstName(userData.firstName);
@@ -52,7 +51,6 @@ const Profile = () => {
         active: active,
         accessLevel: currAccessLevel,
       });
-      console.log(response);
       if (response) {
         setShowSuccessToast(true);
       } else {
