@@ -42,6 +42,7 @@ function Navbar() {
         {isLoggedIn && (
           <>
             {accessLevel == 0 && (
+            <>
               <FbNavbar.Link
                 as={Link}
                 to="/schedule"
@@ -49,15 +50,32 @@ function Navbar() {
               >
                 Schedule
               </FbNavbar.Link>
+              <FbNavbar.Link
+                  as={Link}
+                  to="/scheduleUnassignedView"
+                  className="text-white hover:text-secondary"
+                >
+                  Unassigned Shifts
+                </FbNavbar.Link>
+              </>
             )}
             {accessLevel == 1 && (
-              <FbNavbar.Link
-                as={Link}
-                to="/employeeList"
-                className="text-white hover:text-secondary"
-              >
-                Employee List
-              </FbNavbar.Link>
+              <>
+                <FbNavbar.Link
+                  as={Link}
+                  to="/employeeList"
+                  className="text-white hover:text-secondary"
+                >
+                  Employee List
+                </FbNavbar.Link>
+                <FbNavbar.Link
+                  as={Link}
+                  to="/scheduleUnassignedEditor"
+                  className="text-white hover:text-secondary"
+                >
+                   Unassigned Shifts
+                </FbNavbar.Link>
+              </>
             )}
             {accessLevel == 2 && (
               <>

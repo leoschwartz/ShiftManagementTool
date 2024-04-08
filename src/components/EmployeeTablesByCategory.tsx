@@ -58,10 +58,10 @@ const EmployeeTablesByCategory = ({ userId, userToken, employeeList }) => {
               <div className="overflow-x-auto mt-4">
                 <Table hoverable>
                   <Table.Head>
-                    <Table.HeadCell className="w-3/4">
+                    <Table.HeadCell className="w-8/12">
                       Undefined Category
                     </Table.HeadCell>
-                    <Table.HeadCell className="w-1/4">
+                    <Table.HeadCell className="w-4/12">
                       <span className="sr-only">Edit Schedule</span>
                     </Table.HeadCell>
                   </Table.Head>
@@ -71,14 +71,20 @@ const EmployeeTablesByCategory = ({ userId, userToken, employeeList }) => {
                         key={index}
                         className="bg-white dark:border-gray-700 dark:bg-gray-800"
                       >
-                        <Table.Cell className="w-3/4">{`${employee.firstName} ${employee.lastName}`}</Table.Cell>
-                        <Table.Cell className="w-1/4">
+                        <Table.Cell className="w-8/12">{`${employee.firstName} ${employee.lastName}`}</Table.Cell>
+                        <Table.Cell className="w-4/12">
                           <Link
                             to={`/scheduleEditor/${employee.id}`}
                             className="font-medium text-secondary hover:underline mr-4 text-nowrap"
                           >
                             Edit Schedule
-                          </Link>
+                          </Link><br/>
+                          <Link
+                            to={`/scheduleTemplateEditor/${employee.id}`}
+                            className="font-medium text-secondary hover:underline dark:text-cyan-500"
+                          >
+                            Edit Schedule Template
+                          </Link><br/>
                           <Link
                             to={`/performance/${employee.id}`}
                             className="font-medium text-secondary hover:underline text-nowrap "
@@ -100,10 +106,10 @@ const EmployeeTablesByCategory = ({ userId, userToken, employeeList }) => {
               <div className="overflow-x-auto mt-4">
                 <Table hoverable>
                   <Table.Head>
-                    <Table.HeadCell className="w-3/4">
+                    <Table.HeadCell className="w-8/12">
                       {category}
                     </Table.HeadCell>
-                    <Table.HeadCell className="w-1/4">
+                    <Table.HeadCell className="w-4/12">
                       <span className="sr-only">Edit Schedule</span>
                     </Table.HeadCell>
                   </Table.Head>
@@ -115,15 +121,27 @@ const EmployeeTablesByCategory = ({ userId, userToken, employeeList }) => {
                           key={index}
                           className="bg-white dark:border-gray-700 dark:bg-gray-800"
                         >
-                          <Table.Cell className="w-3/4">{`Employee#${
+                          <Table.Cell className="w-8/12">{`Employee#${
                             index + 1
                           }`}</Table.Cell>
-                          <Table.Cell className="w-1/4">
+                          <Table.Cell className="w-4/12">
                             <Link
                               to={`/scheduleEditor/${employee.id}`}
                               className="font-medium text-secondary hover:underline dark:text-cyan-500"
                             >
                               Edit Schedule
+                            </Link><br/>
+                            <Link
+                              to={`/scheduleTemplateEditor/${employee.id}`}
+                              className="font-medium text-secondary hover:underline dark:text-cyan-500"
+                            >
+                              Edit Schedule Template
+                            </Link><br/>
+                            <Link
+                              to={`/performance/${employee.id}`}
+                              className="font-medium text-secondary hover:underline text-nowrap "
+                            >
+                              View Performance
                             </Link>
                           </Table.Cell>
                         </Table.Row>

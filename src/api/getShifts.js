@@ -6,22 +6,17 @@ import axios from "axios";
 // @param {Date} startTime
 // @param {Date} endTime
 // @returns {Array} array of shifts
-export const getShifts = async (userToken, employeeId, startTime, endTime) => {
-  const apiUrl = import.meta.env.VITE_API_URL + "/shifts/getRange";
+export const getShifts = async (userToken, scheduleId) => {
+  const apiUrl = import.meta.env.VITE_API_URL + "/schedule/getScheduleShifts/" + scheduleId;
   if (!apiUrl) {
     throw new Error("API_URL is not defined");
   }
   try {
     const res = await axios({
-      method: "post",
+      method: "get",
       url: apiUrl,
       headers: {
         Authorization: "Bearer " + userToken,
-      },
-      data: {
-        employeeId: employeeId,
-        startTime: startTime,
-        endTime: endTime,
       },
     });
     for (const x of res.data) {

@@ -1,6 +1,7 @@
 import "./App.css";
 import ScheduleView from "./routes/ScheduleView";
 import ScheduleEditor from "./routes/ScheduleEditor";
+import ScheduleTemplateEditor from "./routes/ScheduleTemplateEditor";
 import Navbar from "./components/Navbar";
 import NotificationIcon from "./components/NotificationIcon";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -14,6 +15,8 @@ import AddNewUserPage from "./routes/AddNewUserPage";
 import EmployeeList from "./routes/EmployeeList";
 import AdminManagerAccountList from "./routes/AdminManagerAccountList";
 import PerformanceView from "./routes/PerformanceView";
+import ScheduleUnassignedEditor from "./routes/ScheduleUnassignedEditor";
+import ScheduleUnassignedView from "./routes/ScheduleUnassignedView";
 function App() {
   return (
     <>
@@ -48,6 +51,14 @@ function App() {
                 element={<ScheduleEditor />}
               ></Route>
               <Route
+                path="/scheduleTemplateEditor/:employee"
+                element={<ScheduleTemplateEditor />}
+              ></Route>
+              <Route
+                path="/scheduleUnassignedEditor"
+                element={<ScheduleUnassignedEditor />}
+              ></Route>
+              <Route
                 path="/performance/:employeeId"
                 element={<PerformanceView />}
               ></Route>
@@ -60,6 +71,10 @@ function App() {
               }
             >
               <Route path="/schedule" element={<ScheduleView />}></Route>
+              <Route
+                path="/scheduleUnassignedView"
+                element={<ScheduleUnassignedView />}
+              ></Route>
             </Route>
             <Route path="/profile" element={<Profile />}></Route>
             <Route path="/unauthorize" element={<Unauthorize />} />
