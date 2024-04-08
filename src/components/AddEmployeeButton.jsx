@@ -5,8 +5,8 @@ import { userIdAtom } from "../globalAtom";
 import { Toast } from "flowbite-react";
 import { HiCheck, HiX } from "react-icons/hi";
 import { addNewUser } from "../api/addNewUser";
-import { updateEmployeeManager } from "../api/updateEmployeeManager";
 import { updateManager } from "../api/updateManager";
+import { updateEmployee } from "../api/updateEmployee";
 import PropTypes from "prop-types";
 
 
@@ -39,13 +39,10 @@ const AddEmployeeButton = ({ userToken, refreshEmployeeList }) => {
       if (createEmployeeResponse.success) {
         const newEmployee = createEmployeeResponse.user;
         const employeeId = newEmployee.id;
-        console.log("New employee obj: " + JSON.stringify(newEmployee));
+        const employeeAccountInfoId = newEmployee.accountInfo.id;
+        // console.log("New employee obj: " + JSON.stringify(newEmployee));
         // Update reportTo with managerId
-        await updateEmployeeManager(
-          userToken,
-          managerId,
-          newEmployee.accountInfo.id
-        );
+        await updateEmployee(userToken, employeeAccountInfoId, {reportTo: managerId});
 
         // Add employee to employeeList
         const updateManagerResponse = await updateManager(

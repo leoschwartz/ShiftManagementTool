@@ -10,6 +10,7 @@ const EmployeeTablesByCategory = ({
   employeeList,
   setIsEmployeeModalOpen,
   setSelectedEmployee,
+  isEmployeeModalOpen,
 }) => {
   const [categoryList, setCategoryList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,17 +29,19 @@ const EmployeeTablesByCategory = ({
           return employeeDetails;
         })
       );
+      // console.log(array);
       setEmployeeListDetails(array);
       setLoading(false);
     };
     fetchCategories();
-  }, [employeeList]);
+  }, [employeeList, isEmployeeModalOpen]);
 
   useEffect(() => {
+
     if (employeeListDetails) {
       setUndefinedCategoryEmployees(
         employeeListDetails.filter(
-          (employee) => employee.accountInfo.category === -1
+          (employee) => employee?.accountInfo?.category === -1
         )
       );
     } else {
@@ -116,17 +119,25 @@ const EmployeeTablesByCategory = ({
                     </Table.HeadCell>
                   </Table.Head>
                   <Table.Body className="divide-y">
-                    {employeeList
-                      .filter((employee) => employee.category === index)
+                    {employeeListDetails
+                      .filter((employee) => {
+                        return employee?.accountInfo.category === index;
+                      })
                       .map((employee, index) => (
                         <Table.Row key={index} className="bg-white ">
                           <Table.Cell className="w-2/5">{`${employee.firstName} ${employee.lastName}`}</Table.Cell>
                           <Table.Cell className=" flex justify-end">
                             <Link
                               to={`/scheduleEditor/${employee.id}`}
-                              className="font-medium text-secondary hover:underline"
+                              className="font-medium text-secondary hover:underline mr-4 text-nowrap"
                             >
                               Edit Schedule
+                            </Link>
+                            <Link
+                              to={`/performance/${employee.id}`}
+                              className="font-medium text-secondary hover:underline text-nowrap mr-4"
+                            >
+                              View Performance
                             </Link>
                             <a
                               className="font-medium text-secondary hover:underline hover:cursor-pointer text-nowrap"
@@ -142,7 +153,7 @@ const EmployeeTablesByCategory = ({
                       ))}
                     {/* Render if no employees for the category */}
                     {employeeListDetails.filter((employee) => {
-                      employee.category === index;
+                      employee?.accountInfo?.category && employee?.accountInfo?.category === index;
                     }).length === 0 && (
                       <Table.Row className="bg-white">
                         <Table.Cell className="w-2/5">

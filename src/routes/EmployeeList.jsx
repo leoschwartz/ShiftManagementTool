@@ -8,6 +8,9 @@ import AddEmployeeButton from "../components/AddEmployeeButton";
 import { getManager } from "../api/getManager";
 import { updateManager } from "../api/updateManager";
 import { Button, Label, Modal, TextInput } from "flowbite-react";
+import getCategories from "../api/getCategories";
+import { updateEmployee } from "../api/updateEmployee";
+import { updateUser } from "../api/updateUser";
 
 const EmployeeList = () => {
   const [employeeList, setEmployeeList] = useState([]);
@@ -17,7 +20,8 @@ const EmployeeList = () => {
   const [selectedEmployee, setSelectedEmployee] = useState({});
   const [employeeFirstName, setEmployeeFirstName] = useState("");
   const [employeeLastName, setEmployeeLastName] = useState("");
-  const [employeeCategory, setEmployeeCategory] = useState("");
+  const [employeeCategory, setEmployeeCategory] = useState(-1);
+  const [categoryList, setCategoryList] = useState([]);
 
   // Gets the manager employee list so it can be passed to the
   // TablesByCategory component
@@ -26,11 +30,17 @@ const EmployeeList = () => {
       const userData = await getManager(userToken, userId);
 
       if (userData) {
-        console.log(userData);
+        // console.log(userData);
         if (userData.employeeList.length !== 0) {
           setEmployeeList(userData.employeeList);
         } else {
           setEmployeeList([]);
+        }
+        if (userData.categoryList.length !== 0) {
+          const categories = await getCategories(userId, userToken);
+          setCategoryList(categories);
+        } else {
+          setCategoryList([]);
         }
       } else {
         console.error("Failed to fetch employee list");
@@ -41,19 +51,41 @@ const EmployeeList = () => {
   };
 
   const handleEmployeeUpdate = async () => {
-    setEmployeeFirstName("");
-    setEmployeeLastName("");
-    setSelectedEmployee({});
+    try {
+      // console.log(selectedEmployee);
+      // console.log(employeeCategory);
+      if (employeeCategory !== selectedEmployee.accountInfo.category) {
+        await updateEmployee(userToken, selectedEmployee.accountInfo.id, {
+          category: employeeCategory,
+        });
+      }
+      await updateUser(userToken, selectedEmployee.id, {
+        firstName: employeeFirstName == "" ? selectedEmployee.firstName : employeeFirstName,
+        lastName: employeeLastName == "" ? selectedEmployee.lastName : employeeLastName,
+      });
+
+      // reset values
+      setEmployeeFirstName("");
+      setEmployeeLastName("");
+      setEmployeeCategory(-1);
+      setSelectedEmployee({});
+      setIsEmployeeModalOpen(false);
+    } catch (error) {
+      console.error("Error updating employee:", error);
+    }
   };
   const handleEmployeeDelete = async () => {
     try {
       await deleteUser(userToken, selectedEmployee.id);
-      await updateManager(userToken, userId, {removeEmployee: selectedEmployee.id});
+      const updatedManager = await updateManager(userToken, userId, {
+        removeEmployee: selectedEmployee.id,
+      });
       setEmployeeFirstName("");
       setEmployeeLastName("");
-      setEmployeeCategory("");
+      setEmployeeCategory(-1);
       setSelectedEmployee({});
-      console.log("Employee deleted");
+      setIsEmployeeModalOpen(false);
+      setEmployeeList(updatedManager.data.employeeList);
     } catch (error) {
       console.error("Error deleting employee:", error);
     }
@@ -89,6 +121,7 @@ const EmployeeList = () => {
           employeeList={employeeList}
           setIsEmployeeModalOpen={setIsEmployeeModalOpen}
           setSelectedEmployee={setSelectedEmployee}
+          isEmployeeModalOpen={isEmployeeModalOpen}
         />
         <br />
       </div>
@@ -112,7 +145,7 @@ const EmployeeList = () => {
                 type="text"
                 value={employeeFirstName}
                 placeholder={selectedEmployee.firstName}
-                onChange={(value) => setEmployeeFirstName(value)}
+                onChange={(e) => setEmployeeFirstName(e.target.value)}
               />
             </div>
 
@@ -125,7 +158,7 @@ const EmployeeList = () => {
                 type="text"
                 value={employeeLastName}
                 placeholder={selectedEmployee.lastName}
-                onChange={(value) => setEmployeeLastName(value)}
+                onChange={(e) => setEmployeeLastName(e.target.value)}
               />
             </div>
 
@@ -134,13 +167,24 @@ const EmployeeList = () => {
               <div className="mb-2 block">
                 <Label htmlFor="employeeCategory" value="Category:" />
               </div>
-              <TextInput
-                id="employeeCategory"
-                type="text"
-                value={employeeCategory}
-                placeholder={selectedEmployee.category}
-                onChange={(value) => setEmployeeCategory(value)}
-              />
+              <div>
+                <select
+                  id="employeeCategory"
+                  name="employeeCategory"
+                  value={employeeCategory}
+                  onChange={(e) =>
+                    setEmployeeCategory(parseInt(e.target.value))
+                  }
+                  className="border border-gray-300 rounded px-3 py-2 text-gray-800 w-full focus:outline-none focus:border-primary"
+                >
+                  <option value={-1}>Undefined Category</option>
+                  {categoryList.map((category, index) => (
+                    <option key={index} value={index}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div className="flex justify-end">
               <Button
@@ -158,6 +202,10 @@ const EmployeeList = () => {
               <Button
                 onClick={() => {
                   setIsEmployeeModalOpen(false);
+                  setSelectedEmployee({});
+                  setEmployeeFirstName("");
+                  setEmployeeLastName("");
+                  setEmployeeCategory(-1);
                 }}
                 className="text-white bg-red-500 hover:bg-red-600 px-3 py-2 rounded"
               >
