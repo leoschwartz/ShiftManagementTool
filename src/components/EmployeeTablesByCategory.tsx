@@ -2,9 +2,16 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Table, Spinner } from "flowbite-react";
 import getCategories from "../api/getCategories";
-import { getUser } from "../api/getUser";
+import { getUserById } from "../api/getUserById";
 
-const EmployeeTablesByCategory = ({ userId, userToken, employeeList }) => {
+const EmployeeTablesByCategory = ({
+  userId,
+  userToken,
+  employeeList,
+  setIsEmployeeModalOpen,
+  setSelectedEmployee,
+  isEmployeeModalOpen,
+}) => {
   const [categoryList, setCategoryList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [employeeListDetails, setEmployeeListDetails] = useState<any[]>([]);
@@ -16,27 +23,24 @@ const EmployeeTablesByCategory = ({ userId, userToken, employeeList }) => {
     const fetchCategories = async () => {
       const categories = await getCategories(userId, userToken);
       setCategoryList(categories);
-      // for (let i = 0; i < employeeList.length; i++) {
-      //   const employeeDetails = await getUser(userToken, employeeList[i]);
-      //   setEmployeeListDetails((prevState) => [...prevState, employeeDetails]);
-      // }
       const array = await Promise.all(
         employeeList.map(async (employee) => {
-          const employeeDetails = await getUser(userToken, employee);
+          const employeeDetails = await getUserById(userToken, employee);
           return employeeDetails;
         })
       );
+      // console.log(array);
       setEmployeeListDetails(array);
       setLoading(false);
     };
     fetchCategories();
-  }, [employeeList]);
+  }, [employeeList, isEmployeeModalOpen]);
 
   useEffect(() => {
     if (employeeListDetails) {
       setUndefinedCategoryEmployees(
         employeeListDetails.filter(
-          (employee) => employee.accountInfo.category === -1
+          (employee) => employee?.accountInfo?.category === -1
         )
       );
     } else {
@@ -58,39 +62,45 @@ const EmployeeTablesByCategory = ({ userId, userToken, employeeList }) => {
               <div className="overflow-x-auto mt-4">
                 <Table hoverable>
                   <Table.Head>
-                    <Table.HeadCell className="w-8/12">
+                    <Table.HeadCell className="w-2/5">
                       Undefined Category
                     </Table.HeadCell>
-                    <Table.HeadCell className="w-4/12">
-                      <span className="sr-only">Edit Schedule</span>
+                    <Table.HeadCell className=" flex justify-center">
+                      Options
                     </Table.HeadCell>
                   </Table.Head>
                   <Table.Body className="divide-y">
                     {undefinedCategoryEmployees.map((employee, index) => (
-                      <Table.Row
-                        key={index}
-                        className="bg-white dark:border-gray-700 dark:bg-gray-800"
-                      >
-                        <Table.Cell className="w-8/12">{`${employee.firstName} ${employee.lastName}`}</Table.Cell>
-                        <Table.Cell className="w-4/12">
+                      <Table.Row key={index} className="bg-white">
+                        <Table.Cell className="w-2/5">{`${employee.firstName} ${employee.lastName}`}</Table.Cell>
+                        <Table.Cell className=" flex justify-end">
                           <Link
                             to={`/scheduleEditor/${employee.id}`}
                             className="font-medium text-secondary hover:underline mr-4 text-nowrap"
                           >
                             Edit Schedule
-                          </Link><br/>
+                          </Link>
                           <Link
                             to={`/scheduleTemplateEditor/${employee.id}`}
                             className="font-medium text-secondary hover:underline dark:text-cyan-500"
                           >
                             Edit Schedule Template
-                          </Link><br/>
+                          </Link>
                           <Link
                             to={`/performance/${employee.id}`}
-                            className="font-medium text-secondary hover:underline text-nowrap "
+                            className="font-medium text-secondary hover:underline text-nowrap mr-4"
                           >
                             View Performance
                           </Link>
+                          <a
+                            className="font-medium text-secondary hover:underline hover:cursor-pointer text-nowrap"
+                            onClick={() => {
+                              setSelectedEmployee(employee);
+                              setIsEmployeeModalOpen(true);
+                            }}
+                          >
+                            View Account
+                          </a>
                         </Table.Cell>
                       </Table.Row>
                     ))}
@@ -106,55 +116,62 @@ const EmployeeTablesByCategory = ({ userId, userToken, employeeList }) => {
               <div className="overflow-x-auto mt-4">
                 <Table hoverable>
                   <Table.Head>
-                    <Table.HeadCell className="w-8/12">
+                    <Table.HeadCell className="w-2/5">
                       {category}
                     </Table.HeadCell>
-                    <Table.HeadCell className="w-4/12">
-                      <span className="sr-only">Edit Schedule</span>
+                    <Table.HeadCell className=" flex justify-center">
+                      Options
                     </Table.HeadCell>
                   </Table.Head>
                   <Table.Body className="divide-y">
-                    {employeeList
-                      .filter((employee) => employee.category === index)
+                    {employeeListDetails
+                      .filter((employee) => {
+                        return employee?.accountInfo.category === index;
+                      })
                       .map((employee, index) => (
-                        <Table.Row
-                          key={index}
-                          className="bg-white dark:border-gray-700 dark:bg-gray-800"
-                        >
-                          <Table.Cell className="w-8/12">{`Employee#${
-                            index + 1
-                          }`}</Table.Cell>
-                          <Table.Cell className="w-4/12">
+                        <Table.Row key={index} className="bg-white ">
+                          <Table.Cell className="w-2/5">{`${employee.firstName} ${employee.lastName}`}</Table.Cell>
+                          <Table.Cell className=" flex justify-end">
                             <Link
                               to={`/scheduleEditor/${employee.id}`}
-                              className="font-medium text-secondary hover:underline dark:text-cyan-500"
+                              className="font-medium text-secondary hover:underline mr-4 text-nowrap"
                             >
                               Edit Schedule
-                            </Link><br/>
+                            </Link>
                             <Link
                               to={`/scheduleTemplateEditor/${employee.id}`}
                               className="font-medium text-secondary hover:underline dark:text-cyan-500"
                             >
                               Edit Schedule Template
-                            </Link><br/>
+                            </Link>
                             <Link
                               to={`/performance/${employee.id}`}
-                              className="font-medium text-secondary hover:underline text-nowrap "
+                              className="font-medium text-secondary hover:underline text-nowrap mr-4"
                             >
                               View Performance
                             </Link>
+                            <a
+                              className="font-medium text-secondary hover:underline hover:cursor-pointer text-nowrap"
+                              onClick={() => {
+                                setSelectedEmployee(employee);
+                                setIsEmployeeModalOpen(true);
+                              }}
+                            >
+                              View Account
+                            </a>
                           </Table.Cell>
                         </Table.Row>
                       ))}
                     {/* Render if no employees for the category */}
-                    {employeeListDetails.filter(
-                      (employee) => employee.category === index
-                    ).length === 0 && (
-                      <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                        <Table.Cell className="w-3/4">
+                    {employeeListDetails.filter((employee) => {
+                      employee?.accountInfo?.category &&
+                        employee?.accountInfo?.category === index;
+                    }).length === 0 && (
+                      <Table.Row className="bg-white">
+                        <Table.Cell className="w-2/5">
                           No employees for this category
                         </Table.Cell>
-                        <Table.Cell className="w-1/4"></Table.Cell> {/* */}
+                        <Table.Cell></Table.Cell> {/* */}
                       </Table.Row>
                     )}
                   </Table.Body>

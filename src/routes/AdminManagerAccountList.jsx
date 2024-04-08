@@ -72,18 +72,15 @@ function AdminManagerAccountList() {
     e.preventDefault();
     const firstName = e.target.firstName.value;
     const lastName = e.target.lastName.value;
-    const updateDate = {};
+    const updateData = {};
     if (verifyString(firstName)) {
-      updateDate.firstName = firstName;
+      updateData.firstName = firstName;
     }
     if (verifyString(lastName)) {
-      updateDate.lastName = lastName;
+      updateData.lastName = lastName;
     }
     try {
-      const data = await updateUser(userToken, selectedUser.id, {
-        firstName: firstName,
-        lastName: lastName,
-      });
+      const data = await updateUser(userToken, selectedUser.id, updateData);
       if (data) {
         await fetchData();
         setShowSuccessToast(true);
@@ -114,7 +111,7 @@ function AdminManagerAccountList() {
         />
       </Modal>
       <section className="overflow-x-auto mx-2 sm:mx-6">
-        <h1 className="text-3xl font-semibold tracking-wide my-4 text-primary">
+        <h1 className="text-3xl font-bold tracking-wide my-4 text-primary text-center">
           Account manager
         </h1>
         <div>

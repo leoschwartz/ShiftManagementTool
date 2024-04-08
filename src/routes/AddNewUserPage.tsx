@@ -3,7 +3,7 @@ import Theme1 from "../components/theme/Theme1";
 import { addNewUser } from "../api/addNewUser";
 import { userTokenAtom } from "../globalAtom";
 import { useAtom } from "jotai";
-import { Spinner } from 'flowbite-react';
+import { Spinner } from "flowbite-react";
 
 const AddNewUserPage = () => {
   const [firstName, setFirstName] = useState("");
@@ -53,7 +53,7 @@ const AddNewUserPage = () => {
   return (
     <>
       <Theme1 />
-      <div className="max-w-md mx-auto my-8">
+      <div className="w-full max-w-md sm:my-8 mx-auto bg-white rounded-lg border border-primaryBorder shadow-default py-10 px-16">
         <h1 className="text-3xl font-bold mb-4">Create a new user</h1>
         <form className="space-y-4 mx-2" onSubmit={handleSubmit}>
           <div>
@@ -125,16 +125,18 @@ const AddNewUserPage = () => {
           </div>
           {error && <p className="text-red-500">{error}</p>}
           {notification && <p className="text-green-500">{notification}</p>}
-          {isLoading ? (
-            <Spinner aria-label="Loading" color="pink" />
-          ) : (
-            <button
-              type="submit"
-              className="bg-fifth hover:bg-forth text-white font-bold py-2 px-4 rounded"
-            >
-              Create
-            </button>
-          )}
+          <div className="flex justify-center items-center">
+            {isLoading ? (
+              <Spinner aria-label="Loading" color="pink" />
+            ) : (
+              <button
+                type="submit"
+                className="bg-fifth hover:bg-forth text-white font-bold py-2 px-4 rounded"
+              >
+                Create
+              </button>
+            )}
+          </div>
         </form>
       </div>
     </>

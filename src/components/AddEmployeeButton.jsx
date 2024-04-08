@@ -5,40 +5,26 @@ import { userIdAtom } from "../globalAtom";
 import { Toast } from "flowbite-react";
 import { HiCheck, HiX } from "react-icons/hi";
 import { addNewUser } from "../api/addNewUser";
-import { updateEmployeeManager } from "../api/updateEmployeeManager";
+import { updateManager } from "../api/updateManager";
+import { updateEmployee } from "../api/updateEmployee";
+import PropTypes from "prop-types";
 
-// eslint-disable-next-line react/prop-types
-const AddEmployeeButton = ({ userToken }) => {
+
+
+const AddEmployeeButton = ({ userToken, refreshEmployeeList }) => {
   const [showAddEmployeePopup, setShowAddEmployeePopup] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [userId] = useAtom(userIdAtom);
+  const [managerId] = useAtom(userIdAtom);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
 
   const handleAddEmployee = async () => {
     try {
-      // Create employee
-      // const createEmployeeResponse = await fetch(import.meta.env.VITE_API_URL + "/employee/register", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     Authorization: `Bearer ${userToken}`,
-      //   },
-      //   body: JSON.stringify({
-      //     email,
-      //     password,
-      //     firstName,
-      //     lastName,
-      //     accessLevel: 0,
-      //     active: 1,
-      //     managerId: userId,
-      //   }),
-      // });
       const userInfo = {
-        reportTo: userId,
+        reportTo: managerId,
         accessLevel: 0,
         active: 1,
         firstName,
@@ -53,55 +39,42 @@ const AddEmployeeButton = ({ userToken }) => {
       if (createEmployeeResponse.success) {
         const newEmployee = createEmployeeResponse.user;
         const employeeId = newEmployee.id;
-        console.log("New employee obj: " + JSON.stringify(newEmployee));
+        const employeeAccountInfoId = newEmployee.accountInfo.id;
+        // console.log("New employee obj: " + JSON.stringify(newEmployee));
         // Update reportTo with managerId
-        await updateEmployeeManager(userToken, userId, newEmployee.accountInfo.id);
+        await updateEmployee(userToken, employeeAccountInfoId, {reportTo: managerId});
 
         // Add employee to employeeList
-        const updateManagerResponse = await fetch(
-          import.meta.env.VITE_API_URL + "/manager/addEmployee",
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${userToken}`,
-            },
-            body: JSON.stringify({
-              managerId: userId,
-              managerUpdatedData: {
-                addEmployee: employeeId,
-              },
-            }),
-          }
+        const updateManagerResponse = await updateManager(
+          userToken,
+          managerId,
+          { addEmployee: employeeId }
         );
 
-        if (updateManagerResponse.ok) {
-          console.log("Employee added to manager's list!");
+        if (updateManagerResponse.success) {
           setShowSuccessToast(true);
           setShowAddEmployeePopup(false);
+          await refreshEmployeeList();
         } else {
-          console.error("Failed to update manager's employee list");
           setShowErrorToast(true);
         }
       } else {
-        console.error("Failed to create employee");
         setShowErrorToast(true);
       }
     } catch (error) {
-      console.error("Error adding employee:", error);
       setShowErrorToast(true);
     }
   };
 
   return (
     <>
-      <Button
+      <button
         onClick={() => setShowAddEmployeePopup(true)}
-        className="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded mr-2"
+        className="text-white bg-fifth font-semibold hover:bg-forth px-4 py-2 rounded mr-2"
         style={{ zIndex: 10 }}
       >
         Add Employee
-      </Button>
+      </button>
       <Modal
         show={showAddEmployeePopup}
         size="md"
@@ -197,4 +170,9 @@ const AddEmployeeButton = ({ userToken }) => {
   );
 };
 
+
+AddEmployeeButton.propTypes = {
+  userToken: PropTypes.string.isRequired,
+  refreshEmployeeList: PropTypes.func.isRequired,
+};
 export default AddEmployeeButton;
