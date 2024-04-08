@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Theme1 from "./theme/Theme1";
 import { useAtom } from "jotai";
-import { userTokenAtom } from "../globalAtom";
+import { userTokenAtom, userIdAtom } from "../globalAtom";
 import PropTypes from "prop-types";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -13,6 +13,8 @@ import { getCurrentUser } from "../api/getCurrentUser";
 import Notification from "./utils/Notification";
 import ShiftDetail from "./ShiftDetail";
 import ShiftDetailEditor from "./ShiftDetailEditor";
+import { createNotification } from "../api/createNotification";
+import { addScheduleNotification } from "../api/addScheduleNotification";
 
 function renderEventContent(eventInfo) {
   let desc = eventInfo.event.extendedProps.desc;
@@ -43,6 +45,8 @@ function Schedule({ employeeId, propAllowEdits, propOnePage, propRetro, propAllo
   const [addedShifts, setAddedShifts] = useState([]); //Array of new shifts
   const [error, setError] = useState("");
   const [modalKey, setModalKey] = useState(0); //Change to force update modal
+
+  const [userId, setUserId] = useAtom(userIdAtom);
 
   const calendarRangeStart = useRef(0);
   const calendarRangeEnd = useRef(0);
@@ -321,6 +325,10 @@ function Schedule({ employeeId, propAllowEdits, propOnePage, propRetro, propAllo
     setEditedShifts([]);
     setIsSaved(true);
 
+    // create notification
+    let newNotification = await createNotification(userToken, userId, "Schedule updated", "Check your updated schedule");
+    // add to employee list
+    await addScheduleNotification(userToken, newNotification.id, employeeId);
   };
 
   // Reset all queued changes
