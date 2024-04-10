@@ -2,7 +2,7 @@
 
 - [Live domain](https://shift-management-tool.vercel.app)
 - [Documentation](./artifacts/Project%20Technical%20Document.pdf)
-- [Project Deviation](./artifacts/Project%20Deviation%20Document.pdf)
+- [Project Deviation](./artifacts/Project%20Deviation.pdf)
 
 ## Server
 
