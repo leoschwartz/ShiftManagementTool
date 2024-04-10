@@ -1,11 +1,20 @@
 # Shift Management Tool
 
 - [Live domain](https://shift-management-tool.vercel.app)
+- [Documentation](./artifacts/Project%20Technical%20Document.pdf)
+- [Project Deviation](./artifacts/Project%20Deviation%20Document.pdf)
 
 ## Server
 
 - [Live demo](https://calm-pear-crab-fez.cyclic.app/)
 - [Repository](https://github.com/LinhNguyenLe2109/ShiftManagementServer)
+
+## Local installation
+Since the application requires some secret keys, running application locally is not suggested. If you still want to run the application locally, you need to follow these steps:
+- Since application is divided into two parts, you need to install both server and client to run the application locally.
+- Reach out to one of us to request our .env setup for both server and client.
+- Run the server first with the following commands: npm start
+- Run the client with the following commands: npm run devlocal
 
 ## Project Description
 
