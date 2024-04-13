@@ -5,7 +5,7 @@ import PerformanceLineChart from "../components/PerformanceLineChart";
 import { useParams } from "react-router-dom";
 import { useAtom } from "jotai";
 import { userTokenAtom } from "../globalAtom";
-import { getShifts } from "../api/getShifts";
+import { getShiftsForReport } from "../api/getShiftsForReport";
 import { getReport } from "../api/getReport";
 import { dateToMonthDayYear } from "../utils/dateToMonthDayYear";
 
@@ -34,7 +34,7 @@ function PerformanceView() {
       alert("Start Date should be less than End Date");
       return;
     }
-    const result = await getShifts(
+    const result = await getShiftsForReport(
       userToken,
       employeeId,
       inputStartDate,
