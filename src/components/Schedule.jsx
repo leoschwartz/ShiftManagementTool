@@ -134,7 +134,7 @@ function Schedule({ employeeId, propAllowEdits, propOnePage, propRetro, propAllo
       const res = await propGetSchedule(
         userToken,
         employeeId,
-        addDays(currentDate,1).toISOString() //hack! timezone issue in backend
+        currentDate.toISOString() //addDays(currentDate,1).toISOString() //hack! timezone issue in backend
       );
       if (res) {
         //this could be optimized.. getshifts re-fetchs the shift id list but we already have that
